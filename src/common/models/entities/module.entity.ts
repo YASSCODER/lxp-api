@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  JoinColumn,
+} from 'typeorm';
 import { FileEmbedded } from '../embedded/file.entity';
 import { Skill } from './skills.entity';
 import { BaseModel } from '../types/base-model.entity';
@@ -17,6 +23,10 @@ export class Module extends BaseModel {
   @Column({ type: 'jsonb', nullable: true })
   file: FileEmbedded;
 
+  @Column({ type: 'int', nullable: false })
+  skillId: number;
+
   @ManyToOne(() => Skill, (skill) => skill.modules)
+  @JoinColumn({ name: 'skillId' })
   skill: Skill;
 }
