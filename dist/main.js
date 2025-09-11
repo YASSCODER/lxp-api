@@ -837,18 +837,21 @@ exports.PostgresConfigService = PostgresConfigService = __decorate([
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const config_1 = __webpack_require__(/*! @nestjs/config */ "@nestjs/config");
+const path = __webpack_require__(/*! path */ "path");
 exports["default"] = (0, config_1.registerAs)('postgres', () => ({
     database: process.env.DB_NAME,
     entities: [
-        __dirname + '/../../../models/entities/*.entity{.ts,.js}',
-        __dirname + '/../../../models/embeded/*.entity{.ts,.js}',
+        path.join(__dirname, '../../../common/models/*.entity{.ts,.js}'),
+        path.join(__dirname, '../../../common/models/types/*.entity{.ts,.js}'),
+        path.join(__dirname, '../../../common/models/embedded/*.details{.ts,.js}'),
     ],
+    logging: ['query', 'error', 'schema'],
+    synchronize: true,
     host: process.env.DB_HOST,
     password: process.env.DB_PASSWORD,
-    port: parseInt(process.env.DB_PORT ?? '5432', 10),
+    port: +process.env.DB_PORT,
     type: 'postgres',
     username: process.env.DB_USERNAME,
-    synchronize: true,
     ssl: process.env.DB_HOST === 'localhost' ? false : { rejectUnauthorized: false },
 }));
 
@@ -1383,7 +1386,12 @@ __decorate([
     __metadata("design:type", typeof (_a = typeof file_entity_1.FileEmbedded !== "undefined" && file_entity_1.FileEmbedded) === "function" ? _a : Object)
 ], Module.prototype, "file", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'int', nullable: false }),
+    __metadata("design:type", Number)
+], Module.prototype, "skillId", void 0);
+__decorate([
     (0, typeorm_1.ManyToOne)(() => skills_entity_1.Skill, (skill) => skill.modules),
+    (0, typeorm_1.JoinColumn)({ name: 'skillId' }),
     __metadata("design:type", typeof (_b = typeof skills_entity_1.Skill !== "undefined" && skills_entity_1.Skill) === "function" ? _b : Object)
 ], Module.prototype, "skill", void 0);
 exports.Module = Module = __decorate([
@@ -1560,7 +1568,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
+var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Skill = void 0;
 const typeorm_1 = __webpack_require__(/*! typeorm */ "typeorm");
@@ -1577,7 +1585,7 @@ __decorate([
     __metadata("design:type", Number)
 ], Skill.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: false }),
+    (0, typeorm_1.Column)({ type: 'jsonb', nullable: false }),
     __metadata("design:type", typeof (_a = typeof name_entity_1.NameEmbedded !== "undefined" && name_entity_1.NameEmbedded) === "function" ? _a : Object)
 ], Skill.prototype, "title", void 0);
 __decorate([
@@ -1590,7 +1598,7 @@ __decorate([
 ], Skill.prototype, "learnerLinks", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)(() => module_entity_1.Module, (module) => module.skill),
-    __metadata("design:type", typeof (_b = typeof module_entity_1.Module !== "undefined" && module_entity_1.Module) === "function" ? _b : Object)
+    __metadata("design:type", Array)
 ], Skill.prototype, "modules", void 0);
 exports.Skill = Skill = __decorate([
     (0, typeorm_1.Entity)('skill')
@@ -1918,6 +1926,16 @@ module.exports = require("typeorm");
 /***/ ((module) => {
 
 module.exports = require("async_hooks");
+
+/***/ }),
+
+/***/ "path":
+/*!***********************!*\
+  !*** external "path" ***!
+  \***********************/
+/***/ ((module) => {
+
+module.exports = require("path");
 
 /***/ })
 

@@ -16,7 +16,7 @@ export class Skill extends BaseModel {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'jsonb', nullable: false })
   title: NameEmbedded;
 
   @OneToMany(() => InstructorSkillLinker, (isl) => isl.skill)
@@ -26,5 +26,5 @@ export class Skill extends BaseModel {
   learnerLinks: LearnerSkillLinker[];
 
   @OneToMany(() => Module, (module) => module.skill)
-  modules: Module;
+  modules: Module[];
 }
