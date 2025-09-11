@@ -9,14 +9,18 @@ import { BaseModel } from '../types/base-model.entity';
 import { Role } from './role.entity';
 import { Learner } from './learner.entity';
 import { Instructor } from './instructor.entity';
+import { FileEmbedded } from '../embedded/file.entity';
 
 @Entity('user')
 export class User extends BaseModel {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ type: 'jsonb', nullable: true })
+  file: FileEmbedded;
+
   @Column({ type: 'varchar', length: 100, nullable: false })
-  fullname: string;
+  fullName: string;
 
   @Column({ type: 'varchar', length: 100, unique: true, nullable: false })
   email: string;

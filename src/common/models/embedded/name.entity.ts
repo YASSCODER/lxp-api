@@ -1,4 +1,4 @@
-export class Name {
+export class NameEmbedded {
   en: string;
   ar: string;
 }

@@ -2,6 +2,8 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseModel } from '../types/base-model.entity';
 import { BadgeLearnerLink } from './badge-learner-link.entity';
 import { User } from './user.entity';
+import { Presence } from './presence.entity';
+import { LearnerSkillLinker } from './learner-skill-linker.entity';
 
 @Entity('learner')
 export class Learner extends BaseModel {
@@ -22,4 +24,10 @@ export class Learner extends BaseModel {
 
   @OneToMany(() => BadgeLearnerLink, (link) => link.learner)
   badgeLinks: BadgeLearnerLink[];
+
+  @OneToMany(() => Presence, (p) => p.learner)
+  presences: Presence[];
+
+  @OneToMany(() => LearnerSkillLinker, (lsl) => lsl.learner)
+  skillLink: LearnerSkillLinker[];
 }
