@@ -15,5 +15,9 @@ export default registerAs('postgres', () => ({
   type: 'postgres',
   username: process.env.DB_USERNAME,
   ssl:
-    process.env.DB_HOST === 'localhost' ? false : { rejectUnauthorized: false },
+    process.env.DB_SSL === 'true'
+      ? {
+          rejectUnauthorized: false,
+        }
+      : false,
 }))
