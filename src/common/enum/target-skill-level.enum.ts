@@ -1,0 +1,6 @@
+export enum TargetSkillLevel {
+  INTERMEDIATE = 'INTERMEDIATE',
+  ADVANCED = 'ADVANCED',
+  EXPERT = 'EXPERT',
+  PROFESSIONAL = 'PROFESSIONAL',
+}
