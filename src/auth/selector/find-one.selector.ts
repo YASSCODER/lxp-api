@@ -2,8 +2,6 @@ export const authSelector = {
   id: true,
   email: true,
   password: true,
-  createdAt: true,
-  updatedAt: true,
   learnerId: true,
   instructorId: true,
   instructor: {
