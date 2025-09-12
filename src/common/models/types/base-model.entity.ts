@@ -6,21 +6,15 @@ import {
 } from 'typeorm'
 
 export class BaseModel {
-  @CreateDateColumn({ nullable: true, type: 'date' })
-  createdAt: Date
-
-  @UpdateDateColumn({ nullable: true, type: 'date' })
-  updatedAt: Date
-
-  @VersionColumn({ nullable: true, type: 'number' })
-  version: number
-
-  @DeleteDateColumn({ nullable: true, type: 'date' })
-  deletedAt: Date
-
-  @CreateDateColumn({ nullable: true, type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamp' })
   createdAtTimestamp: Date
 
-  @UpdateDateColumn({ nullable: true, type: 'timestamp' })
+  @UpdateDateColumn({ type: 'timestamp' })
   updatedAtTimestamp: Date
+
+  @VersionColumn({ nullable: true })
+  version: number
+
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date
 }

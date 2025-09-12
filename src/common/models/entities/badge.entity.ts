@@ -15,7 +15,7 @@ export class Badge extends BaseModel {
   description: string
 
   @Column({ type: 'jsonb', nullable: true })
-  image: FileEmbedded
+  file: FileEmbedded
 
   @OneToMany(() => BadgeLearnerLink, (link) => link.badge)
   learnerLinks: BadgeLearnerLink[]
