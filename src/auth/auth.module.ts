@@ -4,6 +4,9 @@ import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from '@/common/models/entities/user.entity';
+import { Learner } from '@/common/models/entities/learner.entity';
+import { Instructor } from '@/common/models/entities/instructor.entity';
+import { Role } from '@/common/models/entities/role.entity';
 import { AuthController } from './api/auth.controller';
 import { AuthService } from './api/auth.service';
 import { LocalStrategy } from './strategies/local.strategy';
@@ -14,7 +17,7 @@ import { RolesGuard } from './guards/roles.guard';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Learner, Instructor, Role]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -4,6 +4,8 @@ import { BadgeLearnerLink } from './badge-learner-link.entity';
 import { User } from './user.entity';
 import { Presence } from './presence.entity';
 import { LearnerSkillLinker } from './learner-skill-linker.entity';
+import { EntrySkillLevel } from '@/common/enum/entry-skill-level.enum';
+import { TargetSkillLevel } from '@/common/enum/target-skill-level.enum';
 
 @Entity('learner')
 export class Learner extends BaseModel {
@@ -18,6 +20,12 @@ export class Learner extends BaseModel {
 
   @Column({ type: 'boolean', default: false })
   isPresent: boolean;
+
+  @Column({ type: 'varchar', nullable: false })
+  currentLevels: EntrySkillLevel;
+
+  @Column({ type: 'varchar', nullable: false })
+  targetLevels: TargetSkillLevel;
 
   @OneToMany(() => User, (user) => user.learner)
   users: User[];

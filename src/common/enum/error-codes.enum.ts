@@ -1,1 +1,7 @@
-export enum ErrorCode {}
+export enum ErrorCodes {
+  FILE_SIZE_EXCEEDED,
+  DUPLICATE_EMAIL,
+  PHONE_EXISTS,
+  EMAIL_EXISTS,
+  ENTITY_NOT_FOUND,
+}
