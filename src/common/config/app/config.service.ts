@@ -20,4 +20,8 @@ export class AppConfigService {
   get port(): number {
     return this.configService.get<number>('app.port')
   }
+
+  get host() {
+    return this.configService.get<string>('app.host')
+  }
 }
