@@ -1,17 +1,19 @@
+// src/main.ts
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import helmet from 'helmet'
-import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe'
+import { ValidationPipe } from '@nestjs/common'
 import { useContainer } from 'class-validator'
 import * as bodyParser from 'body-parser'
 import { MAX_PARSE_LIMIT } from './common/config/constant/application.constant'
 import { GeneralExceptionFilter } from './common/validation/general-exception-filter'
 import { AppConfigService } from './common/config/app/config.service'
+import { RequestMethod } from '@nestjs/common'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const module: any
 
 export async function bootstrap() {
+
   const app = await NestFactory.create(AppModule)
   const appConfig: AppConfigService = app.get(AppConfigService)
   app.useGlobalPipes(new ValidationPipe())
@@ -20,25 +22,28 @@ export async function bootstrap() {
   app.use(helmet())
   app.use(bodyParser.json({ limit: MAX_PARSE_LIMIT }))
   app.use(bodyParser.urlencoded({ limit: MAX_PARSE_LIMIT, extended: true }))
-  app.useGlobalPipes(new ValidationPipe())
+  app.enableCors()
 
-  /*_________EXCEPTION_FILTERS___________*/
-  app.useGlobalFilters(
-    new GeneralExceptionFilter(),
-    //new AllExceptionsFilter()
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }))
+
+  app.useGlobalFilters(new GeneralExceptionFilter())
+
+  app.setGlobalPrefix('api')
+
+  const port = Number(process.env.PORT ?? appConfig.port ?? 3000)
+  const host = (appConfig as any).host ?? '0.0.0.0'
+
+  await app.listen(port, host)
+  console.log(
+    `🚀 ${appConfig.name} up on http://${host}:${port} (env=${appConfig.env})`,
   )
 
-  /*_________Swagger_Config___________*/
-  await app.listen(appConfig.port)
-
-  if (module.hot) {
+  if (module?.hot) {
     module.hot.accept()
     module.hot.dispose(() => app.close())
   }
-  app.getHttpServer()
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true })
-
   return app
 }
 bootstrap()
