@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseModel } from '../types/base-model.entity';
 import { User } from './user.entity';
 import { InstructorSkillLinker } from './instructor-skill-linker.entity';
+import { ProficiencyLevelEnum } from '@/common/enum/proficiency-level.enum';
 
 @Entity('instructor')
 export class Instructor extends BaseModel {
@@ -13,6 +14,12 @@ export class Instructor extends BaseModel {
 
   @Column({ type: 'boolean', default: false })
   isVerified: boolean;
+
+  @Column({ type: 'varchar', nullable: false })
+  proficiencyLevel: ProficiencyLevelEnum;
+
+  @Column({ type: 'varchar', nullable: false })
+  yearsOfExperience: string;
 
   @OneToMany(() => User, (user) => user.instructor)
   users: User[];

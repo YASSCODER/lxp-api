@@ -4,9 +4,8 @@ import * as path from 'path';
 export default registerAs('postgres', () => ({
   database: process.env.DB_NAME,
   entities: [
-    path.join(__dirname, '../../../common/models/*.entity{.ts,.js}'),
-    path.join(__dirname, '../../../common/models/types/*.entity{.ts,.js}'),
-    path.join(__dirname, '../../../common/models/embedded/*.details{.ts,.js}'),
+    path.join(__dirname, '../../../models/entities/*.entity{.ts,.js}'),
+    path.join(__dirname, '../../../models/embedded/*.entity{.ts,.js}'),
   ],
   logging: ['query', 'error', 'schema'],
   synchronize: true,
