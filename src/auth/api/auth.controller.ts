@@ -21,12 +21,12 @@ export class AuthController {
     return this.authService.login(request.user)
   }
 
-  @Post('signup/learner')
+  @Post('learner/signup')
   async signupLearner(@Body() learnerSignUpDto: LearnerSignUpDto) {
     return this.authService.signupLearner(learnerSignUpDto)
   }
 
-  @Post('signup/instructor')
+  @Post('instructor/signup')
   async signupInstructor(@Body() instructorSignUpDto: InstructorSignUpDto) {
     return this.authService.signupInstructor(instructorSignUpDto)
   }
