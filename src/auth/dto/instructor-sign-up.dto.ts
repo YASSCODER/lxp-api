@@ -1,8 +1,8 @@
-import { Type } from 'class-transformer';
-import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { FileDto } from '@/common/dto/file.dto';
-import { ProficiencyLevelEnum } from '@/common/enum/proficiency-level.enum';
-import { SignUpDto } from './sign-up.dto';
+import { Type } from 'class-transformer'
+import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { FileDto } from '@/common/dto/file.dto'
+import { ProficiencyLevelEnum } from '@/common/enum/proficiency-level.enum'
+import { SignUpDto } from './sign-up.dto'
 
 export class InstructorSignUpDto extends SignUpDto {
   @IsNotEmpty()
@@ -12,13 +12,13 @@ export class InstructorSignUpDto extends SignUpDto {
     ProficiencyLevelEnum.GROWTH,
     ProficiencyLevelEnum.ELITE,
   ])
-  proficiencyLevel: ProficiencyLevelEnum;
+  proficiencyLevel: ProficiencyLevelEnum
 
   @IsNotEmpty()
   @IsString()
-  yearsOfExperience: string;
+  yearsOfExperience: string
 
   @IsOptional()
   @Type(() => FileDto)
-  file: FileDto;
+  file: FileDto
 }

@@ -55,4 +55,10 @@ export const ENTITY_NAME_DICTIONARY: Record<
     en: 'Badge Learner Link',
     ar: 'ربط شارة المتعلم',
   },
-};
+
+  // Default fallback
+  Entity: {
+    en: 'Entity',
+    ar: 'كيان',
+  },
+}

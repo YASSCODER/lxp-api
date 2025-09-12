@@ -4,26 +4,26 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Learner } from './learner.entity';
-import { BaseModel } from '../types/base-model.entity';
-import { Session } from './session.entity';
+} from 'typeorm'
+import { Learner } from './learner.entity'
+import { BaseModel } from '../types/base-model.entity'
+import { Session } from './session.entity'
 
 @Entity('presence')
 export class Presence extends BaseModel {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number
 
   @Column({ type: 'integer', nullable: true })
-  learnerId: number;
+  learnerId: number
 
   @Column({ type: 'uuid' })
-  sessionId: string;
+  sessionId: string
 
   @ManyToOne(() => Learner, (l) => l.presences)
-  learner: Learner;
+  learner: Learner
 
   @ManyToOne(() => Session, (s) => s.presences)
   @JoinColumn({ name: 'sessionId' })
-  session: Session;
+  session: Session
 }

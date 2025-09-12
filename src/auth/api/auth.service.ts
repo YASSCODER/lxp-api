@@ -1,18 +1,18 @@
-import { Injectable, ConflictException, HttpStatus } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '@/common/models/entities/user.entity';
-import { Learner } from '@/common/models/entities/learner.entity';
-import { Instructor } from '@/common/models/entities/instructor.entity';
-import { Role } from '@/common/models/entities/role.entity';
-import { throwAuthorizationValidationError } from '@/common/utils/errors.utils';
-import { ILike, Repository } from 'typeorm';
-import { SignInDto } from '../dto/sign-in.dto';
-import { LearnerSignUpDto } from '../dto/learner-signup.dto';
-import { InstructorSignUpDto } from '../dto/instructor-sign-up.dto';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
-import { UserRole } from '@/common/enum/user-role.enum';
-import { NameEmbedded } from '@/common/models/embedded/name.entity';
+import { Injectable, ConflictException, HttpStatus } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import { User } from '@/common/models/entities/user.entity'
+import { Learner } from '@/common/models/entities/learner.entity'
+import { Instructor } from '@/common/models/entities/instructor.entity'
+import { Role } from '@/common/models/entities/role.entity'
+import { throwAuthorizationValidationError } from '@/common/utils/errors.utils'
+import { ILike, Repository } from 'typeorm'
+import { SignInDto } from '../dto/sign-in.dto'
+import { LearnerSignUpDto } from '../dto/learner-signup.dto'
+import { InstructorSignUpDto } from '../dto/instructor-sign-up.dto'
+import { JwtService } from '@nestjs/jwt'
+import * as bcrypt from 'bcryptjs'
+import { UserRole } from '@/common/enum/user-role.enum'
+import { NameEmbedded } from '@/common/models/embedded/name.entity'
 
 @Injectable()
 export class AuthService {
@@ -37,7 +37,7 @@ export class AuthService {
       relations: {
         role: true,
       },
-    });
+    })
 
     if (!user)
       throwAuthorizationValidationError({
@@ -45,36 +45,36 @@ export class AuthService {
           en: 'Account does not exist',
           ar: 'الحساب غير موجود',
         },
-      });
+      })
 
     const isCorrectPassword = await bcrypt.compare(
       credentials.password,
       user.password,
-    );
+    )
     if (!isCorrectPassword) {
       throwAuthorizationValidationError({
         message: {
           en: 'Invalid password',
           ar: 'كلمة المرور غير صحيحة',
         },
-      });
+      })
     }
     if (user && isCorrectPassword) {
-      return user;
+      return user
     }
-    return null;
+    return null
   }
 
   public async login(user: User) {
-    const role = user.role.title.en;
-    const payload = { id: user.id, role: user.role };
+    const role = user.role.title.en
+    const payload = { id: user.id, role: role }
     const userPayload = {
       userId: user.id,
       fullName: user.fullName,
       email: user.email,
       learnerId: user.learnerId,
       instructorId: user.instructorId,
-    };
+    }
 
     return {
       token: this.jwtService.sign(payload),
@@ -82,7 +82,7 @@ export class AuthService {
         role,
         ...userPayload,
       },
-    };
+    }
   }
 
   public async signupLearner(learnerSignUpDto: LearnerSignUpDto) {
@@ -91,7 +91,7 @@ export class AuthService {
         { email: ILike(learnerSignUpDto.email) },
         { phone: learnerSignUpDto.phone },
       ],
-    });
+    })
 
     if (existingUser) {
       throw new ConflictException({
@@ -99,7 +99,7 @@ export class AuthService {
           en: 'User with this email or phone already exists',
           ar: 'المستخدم بهذا البريد الإلكتروني أو الهاتف موجود بالفعل',
         },
-      });
+      })
     }
 
     let learnerRole = await this.roleRepository.findOne({
@@ -109,7 +109,7 @@ export class AuthService {
           ar: 'متعلم',
         } as NameEmbedded,
       },
-    });
+    })
 
     if (!learnerRole) {
       learnerRole = this.roleRepository.create({
@@ -117,11 +117,11 @@ export class AuthService {
           en: UserRole.LEARNER,
           ar: 'متعلم',
         } as NameEmbedded,
-      });
-      learnerRole = await this.roleRepository.save(learnerRole);
+      })
+      learnerRole = await this.roleRepository.save(learnerRole)
     }
 
-    const hashedPassword = await bcrypt.hash(learnerSignUpDto.password, 10);
+    const hashedPassword = await bcrypt.hash(learnerSignUpDto.password, 10)
 
     const learner = this.learnerRepository.create({
       currentLevels: learnerSignUpDto.currentLevels,
@@ -129,8 +129,8 @@ export class AuthService {
       roi: 0,
       score: 0,
       isPresent: false,
-    });
-    const savedLearner = await this.learnerRepository.save(learner);
+    })
+    const savedLearner = await this.learnerRepository.save(learner)
 
     const user = this.userRepository.create({
       email: learnerSignUpDto.email,
@@ -141,8 +141,8 @@ export class AuthService {
       learnerId: savedLearner.id,
       file: learnerSignUpDto.file,
       isActive: true,
-    });
-    const savedUser = await this.userRepository.save(user);
+    })
+    const savedUser = await this.userRepository.save(user)
 
     return {
       status: HttpStatus.CREATED,
@@ -150,7 +150,7 @@ export class AuthService {
         en: 'Learner account created successfully',
         ar: 'تم إنشاء حساب المتعلم بنجاح',
       },
-    };
+    }
   }
 
   public async signupInstructor(instructorSignUpDto: InstructorSignUpDto) {
@@ -159,7 +159,7 @@ export class AuthService {
         { email: ILike(instructorSignUpDto.email) },
         { phone: instructorSignUpDto.phone },
       ],
-    });
+    })
 
     if (existingUser) {
       throw new ConflictException({
@@ -167,7 +167,7 @@ export class AuthService {
           en: 'User with this email or phone already exists',
           ar: 'المستخدم بهذا البريد الإلكتروني أو الهاتف موجود بالفعل',
         },
-      });
+      })
     }
 
     let instructorRole = await this.roleRepository.findOne({
@@ -177,7 +177,7 @@ export class AuthService {
           ar: 'مدرب',
         } as NameEmbedded,
       },
-    });
+    })
 
     if (!instructorRole) {
       instructorRole = this.roleRepository.create({
@@ -185,19 +185,19 @@ export class AuthService {
           en: UserRole.INSTRUCTOR,
           ar: 'مدرب',
         } as NameEmbedded,
-      });
-      instructorRole = await this.roleRepository.save(instructorRole);
+      })
+      instructorRole = await this.roleRepository.save(instructorRole)
     }
 
-    const hashedPassword = await bcrypt.hash(instructorSignUpDto.password, 10);
+    const hashedPassword = await bcrypt.hash(instructorSignUpDto.password, 10)
 
     const instructor = this.instructorRepository.create({
       proficiencyLevel: instructorSignUpDto.proficiencyLevel,
       yearsOfExperience: instructorSignUpDto.yearsOfExperience,
       rating: 0,
       isVerified: false,
-    });
-    const savedInstructor = await this.instructorRepository.save(instructor);
+    })
+    const savedInstructor = await this.instructorRepository.save(instructor)
 
     const user = this.userRepository.create({
       email: instructorSignUpDto.email,
@@ -208,8 +208,8 @@ export class AuthService {
       instructorId: savedInstructor.id,
       file: instructorSignUpDto.file,
       isActive: true,
-    });
-    const savedUser = await this.userRepository.save(user);
+    })
+    const savedUser = await this.userRepository.save(user)
 
     return {
       status: HttpStatus.CREATED,
@@ -217,6 +217,6 @@ export class AuthService {
         en: 'Instructor account created successfully',
         ar: 'تم إنشاء حساب المدرب بنجاح',
       },
-    };
+    }
   }
 }

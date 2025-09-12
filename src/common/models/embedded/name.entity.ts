@@ -1,4 +1,9 @@
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+
 export class NameEmbedded {
-  en: string;
-  ar: string;
+  @Column({ type: 'varchar' })
+  en: string
+
+  @Column({ type: 'varchar' })
+  ar: string
 }

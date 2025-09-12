@@ -7,36 +7,36 @@ import {
   Unique,
   OneToMany,
   Index,
-} from 'typeorm';
-import { BaseModel } from '../types/base-model.entity';
-import { Learner } from './learner.entity';
-import { Skill } from './skills.entity';
+} from 'typeorm'
+import { BaseModel } from '../types/base-model.entity'
+import { Learner } from './learner.entity'
+import { Skill } from './skills.entity'
 
 @Entity('learner_skill')
 @Unique(['learnerId', 'skillId'])
 export class LearnerSkillLinker extends BaseModel {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number
 
   @Column({ type: 'integer' })
   @Index()
-  learnerId: number;
+  learnerId: number
 
   @Column({ type: 'integer' })
   @Index()
-  skillId: number;
+  skillId: number
 
   @Column({ type: 'int', default: 1 })
-  currentLevel: number;
+  currentLevel: number
 
   @Column({ type: 'int', default: 1 })
-  targetLevel: number;
+  targetLevel: number
 
   @ManyToOne(() => Learner, (learner) => learner.skillLink)
   @JoinColumn({ name: 'learnerId' })
-  learner: Learner;
+  learner: Learner
 
   @ManyToOne(() => Skill, (skill) => skill.learnerLinks)
   @JoinColumn({ name: 'skillId' })
-  skill: Skill;
+  skill: Skill
 }

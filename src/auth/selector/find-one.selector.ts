@@ -21,4 +21,4 @@ export const authSelector = {
     id: true,
     title: true,
   },
-};
+}
