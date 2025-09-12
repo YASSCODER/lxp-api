@@ -14,7 +14,6 @@ declare const module: any
 export async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   const appConfig: AppConfigService = app.get(AppConfigService)
-  app.setGlobalPrefix('trust proxy, 1')
   app.useGlobalPipes(new ValidationPipe())
   app.setGlobalPrefix('api')
   app.enableCors()
