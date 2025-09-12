@@ -13,10 +13,12 @@ import { RequestMethod } from '@nestjs/common'
 declare const module: any
 
 export async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true })
 
-  const appConfig = app.get(AppConfigService)
-
+  const app = await NestFactory.create(AppModule)
+  const appConfig: AppConfigService = app.get(AppConfigService)
+  app.useGlobalPipes(new ValidationPipe())
+  app.setGlobalPrefix('api')
+  app.enableCors()
   app.use(helmet())
   app.use(bodyParser.json({ limit: MAX_PARSE_LIMIT }))
   app.use(bodyParser.urlencoded({ limit: MAX_PARSE_LIMIT, extended: true }))
