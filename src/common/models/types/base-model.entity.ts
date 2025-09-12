@@ -3,24 +3,24 @@ import {
   UpdateDateColumn,
   VersionColumn,
   DeleteDateColumn,
-} from 'typeorm';
+} from 'typeorm'
 
 export class BaseModel {
   @CreateDateColumn({ nullable: true, type: 'date' })
-  createdAt: Date;
+  createdAt: Date
 
   @UpdateDateColumn({ nullable: true, type: 'date' })
-  updatedAt: Date;
+  updatedAt: Date
 
   @VersionColumn({ nullable: true, type: 'number' })
-  version: number;
+  version: number
 
   @DeleteDateColumn({ nullable: true, type: 'date' })
-  deletedAt: Date;
+  deletedAt: Date
 
   @CreateDateColumn({ nullable: true, type: 'timestamp' })
-  createdAtTimestamp: Date;
+  createdAtTimestamp: Date
 
   @UpdateDateColumn({ nullable: true, type: 'timestamp' })
-  updatedAtTimestamp: Date;
+  updatedAtTimestamp: Date
 }

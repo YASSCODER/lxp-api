@@ -4,4 +4,5 @@ export enum ErrorCodes {
   PHONE_EXISTS,
   EMAIL_EXISTS,
   ENTITY_NOT_FOUND,
+  ENTITY_ALREADY_FOUND,
 }

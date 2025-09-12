@@ -4,29 +4,29 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   JoinColumn,
-} from 'typeorm';
-import { FileEmbedded } from '../embedded/file.entity';
-import { Skill } from './skills.entity';
-import { BaseModel } from '../types/base-model.entity';
+} from 'typeorm'
+import { FileEmbedded } from '../embedded/file.entity'
+import { Skill } from './skills.entity'
+import { BaseModel } from '../types/base-model.entity'
 
 @Entity('module')
 export class Module extends BaseModel {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number
 
   @Column({ type: 'varchar', nullable: false, unique: true })
-  title: string;
+  title: string
 
   @Column({ type: 'varchar', nullable: true })
-  description: string;
+  description: string
 
   @Column({ type: 'jsonb', nullable: true })
-  file: FileEmbedded;
+  file: FileEmbedded
 
   @Column({ type: 'int', nullable: false })
-  skillId: number;
+  skillId: number
 
   @ManyToOne(() => Skill, (skill) => skill.modules)
   @JoinColumn({ name: 'skillId' })
-  skill: Skill;
+  skill: Skill
 }

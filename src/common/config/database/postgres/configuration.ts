@@ -1,5 +1,5 @@
-import { registerAs } from '@nestjs/config';
-import * as path from 'path';
+import { registerAs } from '@nestjs/config'
+import * as path from 'path'
 
 export default registerAs('postgres', () => ({
   database: process.env.DB_NAME,
@@ -16,4 +16,4 @@ export default registerAs('postgres', () => ({
   username: process.env.DB_USERNAME,
   ssl:
     process.env.DB_HOST === 'localhost' ? false : { rejectUnauthorized: false },
-}));
+}))

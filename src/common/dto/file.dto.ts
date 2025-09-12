@@ -1,15 +1,15 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator'
 
 export class FileDto {
   @IsOptional()
   @IsString()
-  key: string;
+  key: string
 
   @IsOptional()
   @IsString()
-  fileName: string;
+  fileName: string
 
   @IsOptional()
   @IsString()
-  url: string;
+  url: string
 }
