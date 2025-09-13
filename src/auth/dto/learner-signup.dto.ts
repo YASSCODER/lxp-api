@@ -4,7 +4,7 @@ import { IsIn, IsNotEmpty, IsOptional } from 'class-validator'
 import { TargetSkillLevel } from '@/common/enum/target-skill-level.enum'
 
 export class LearnerSignUpDto extends SignUpDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsIn([
     EntrySkillLevel.INTERMEDIATE,
     EntrySkillLevel.EXPERT,
@@ -13,7 +13,7 @@ export class LearnerSignUpDto extends SignUpDto {
   ])
   currentLevels: EntrySkillLevel
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsIn([
     TargetSkillLevel.PROFESSIONAL,
     TargetSkillLevel.EXPERT,
