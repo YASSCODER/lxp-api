@@ -6,13 +6,16 @@ import { Presence } from './presence.entity'
 import { LearnerSkillLinker } from './learner-skill-linker.entity'
 import { EntrySkillLevel } from '@/common/enum/entry-skill-level.enum'
 import { TargetSkillLevel } from '@/common/enum/target-skill-level.enum'
+import { LearnerCourseLinker } from './learner-course-linker.entity'
+import { LearnerLearnPath } from './learner-learn-path-link.entity'
+import { LearnerModuleLinker } from './learner-module-link.entity'
 
 @Entity('learner')
 export class Learner extends BaseModel {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ type: 'float', nullable: true })
+  @Column({ type: 'numeric', nullable: true })
   roi: number
 
   @Column({ type: 'float', nullable: true })
@@ -38,4 +41,13 @@ export class Learner extends BaseModel {
 
   @OneToMany(() => LearnerSkillLinker, (lsl) => lsl.learner)
   skillLink: LearnerSkillLinker[]
+
+  @OneToMany(() => LearnerCourseLinker, (lcl) => lcl.learner)
+  courseLink: LearnerCourseLinker[]
+
+  @OneToMany(() => LearnerLearnPath, (lpl) => lpl.learner)
+  learnPathLink: LearnerCourseLinker[]
+
+  @OneToMany(() => LearnerModuleLinker, (lml) => lml.learner)
+  moduleLinks: LearnerModuleLinker[]
 }
