@@ -21,10 +21,10 @@ export class Learner extends BaseModel {
   @Column({ type: 'boolean', default: false })
   isPresent: boolean
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: true })
   currentLevels: EntrySkillLevel
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: true })
   targetLevels: TargetSkillLevel
 
   @OneToMany(() => User, (user) => user.learner)
