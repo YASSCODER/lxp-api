@@ -16,3 +16,9 @@ export class FetchSkillDto {
   @IsString()
   searchLike: string
 }
+
+export class FetchSkillAsListItemDto {
+  @IsOptional()
+  @IsString()
+  searchLike: string
+}

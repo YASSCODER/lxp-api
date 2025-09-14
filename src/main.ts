@@ -2,18 +2,16 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import helmet from 'helmet'
-import { ValidationPipe } from '@nestjs/common'
 import { useContainer } from 'class-validator'
 import * as bodyParser from 'body-parser'
 import { MAX_PARSE_LIMIT } from './common/config/constant/application.constant'
 import { GeneralExceptionFilter } from './common/validation/general-exception-filter'
 import { AppConfigService } from './common/config/app/config.service'
-import { RequestMethod } from '@nestjs/common'
+import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe'
 
 declare const module: any
 
 export async function bootstrap() {
-
   const app = await NestFactory.create(AppModule)
   const appConfig: AppConfigService = app.get(AppConfigService)
   app.useGlobalPipes(new ValidationPipe())
@@ -24,7 +22,7 @@ export async function bootstrap() {
   app.use(bodyParser.urlencoded({ limit: MAX_PARSE_LIMIT, extended: true }))
   app.enableCors()
 
-  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }))
+  app.useGlobalPipes(new ValidationPipe())
 
   app.useGlobalFilters(new GeneralExceptionFilter())
 

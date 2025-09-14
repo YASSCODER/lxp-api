@@ -2,10 +2,13 @@ import { LearnerModuleLinker } from '@/common/models/entities/learner-module-lin
 import { LearningUnit } from '@/common/models/entities/module.entity'
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { LearningUnitController } from './api/learning-unit.controller'
+import { LearningUnitService } from './api/learning-unit.service'
 
 @Module({
   imports: [TypeOrmModule.forFeature([LearningUnit, LearnerModuleLinker])],
-  providers: [],
+  providers: [LearningUnitService],
+  controllers: [LearningUnitController],
   exports: [],
 })
-export class ModuleModule {}
+export class LearningUnitModule {}
