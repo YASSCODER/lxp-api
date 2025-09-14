@@ -32,6 +32,15 @@ export class LearnerSkillLinker extends BaseModel {
   @Column({ type: 'int', default: 1 })
   targetLevel: number
 
+  @Column({ type: 'boolean', default: false })
+  completed: boolean
+
+  @Column({ type: 'float', default: 0 })
+  progress: number
+
+  @Column({ type: 'timestamp', nullable: true })
+  completedAt: Date
+
   @ManyToOne(() => Learner, (learner) => learner.skillLink)
   @JoinColumn({ name: 'learnerId' })
   learner: Learner
