@@ -3,12 +3,12 @@ import { NameDto } from '@/common/dto/name.dto'
 import { Type } from 'class-transformer'
 import { IsNotEmpty, IsString, IsOptional, IsNumber } from 'class-validator'
 
-export class CreateModuleDto {
-  @IsNotEmpty()
+export class UpdateModuleDto {
+  @IsOptional()
   @IsString()
   title: NameDto
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   skillId: number
 

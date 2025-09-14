@@ -1,7 +1,7 @@
 import { Entity, ManyToOne, Column, PrimaryGeneratedColumn } from 'typeorm'
 import { BaseModel } from '../types/base-model.entity'
 import { Learner } from './learner.entity'
-import { Module } from './module.entity'
+import { LearningUnit } from './module.entity'
 
 @Entity('learner_module_linker')
 export class LearnerModuleLinker extends BaseModel {
@@ -11,8 +11,8 @@ export class LearnerModuleLinker extends BaseModel {
   @ManyToOne(() => Learner, (learner) => learner.moduleLinks)
   learner: Learner
 
-  @ManyToOne(() => Module, (module) => module.learnerLinks)
-  module: Module
+  @ManyToOne(() => LearningUnit, (lu) => lu.learnerLinks)
+  module: LearningUnit
 
   @Column({ type: 'boolean', default: false })
   completed: boolean

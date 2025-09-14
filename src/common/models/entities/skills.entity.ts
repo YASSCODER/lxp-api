@@ -9,9 +9,9 @@ import {
 import { NameEmbedded } from '../embedded/name.entity'
 import { InstructorSkillLinker } from './instructor-skill-linker.entity'
 import { LearnerSkillLinker } from './learner-skill-linker.entity'
-import { Module } from './module.entity'
 import { BaseModel } from '../types/base-model.entity'
 import { FileEmbedded } from '../embedded/file.entity'
+import { LearningUnit } from './module.entity'
 @Entity('skill')
 export class Skill extends BaseModel {
   @PrimaryGeneratedColumn()
@@ -32,6 +32,6 @@ export class Skill extends BaseModel {
   @OneToMany(() => LearnerSkillLinker, (lsl) => lsl.skill)
   learnerLinks: LearnerSkillLinker[]
 
-  @OneToMany(() => Module, (module) => module.skill)
-  modules: Module[]
+  @OneToMany(() => LearningUnit, (lu) => lu.skill)
+  modules: LearningUnit[]
 }

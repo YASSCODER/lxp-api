@@ -5,14 +5,18 @@ import { Repository } from 'typeorm'
 import { CreateSkillDto } from '../dto/create-skill.dto'
 import { throwFormValidationError } from '@/common/utils/errors.utils'
 import { ErrorCodes } from '@/common/enum/error-codes.enum'
-import { FetchSkillDto } from '../dto/fetch-skill.dto'
+import { FetchSkillAsListItemDto, FetchSkillDto } from '../dto/fetch-skill.dto'
 import { paginationParamsFormula } from '@/common/utils/pagination-formula.utils'
 import {
   PaginationResult,
   PaginationService,
 } from '@/common/pagination/pagination.service'
-import { v4 as uuid } from 'uuid'
 import { S3Service } from '@/common/aws/service/s3.service'
+import { applySkillFilter } from '../helper/filter.helper'
+import {
+  getCreateSuccessMessage,
+  getDeleteSuccessMessage,
+} from '@/common/utils/success-messages.utils'
 
 @Injectable()
 export class SkillService {
@@ -22,21 +26,6 @@ export class SkillService {
     private readonly paginationService: PaginationService,
     private readonly s3Service: S3Service,
   ) {}
-
-  async uploadImage(file: Express.Multer.File) {
-    const key = uuid()
-    const contentType = file.mimetype
-
-    await this.s3Service.uploadFile(key, file.buffer, contentType)
-    const fileName = file.filename || file.originalname || key
-    const url = await this.s3Service.generateSignedDownloadUrl(key)
-
-    return {
-      key,
-      fileName,
-      url,
-    }
-  }
 
   async createSkill(payload: CreateSkillDto) {
     try {
@@ -59,13 +48,10 @@ export class SkillService {
       const skillEntity = this.skillRepository.create({ ...payload })
       const skillSaved = await this.skillRepository.save(skillEntity)
 
-      return {
-        status: HttpStatus.CREATED,
-        message: {
-          en: `skill saved with id : ${skillSaved.id}`,
-          ar: `تم حفظ المهارة بالمعرّف: ${skillSaved.id}`,
-        },
-      }
+      return getCreateSuccessMessage({
+        entityName: 'skill',
+        entityId: skillSaved.id,
+      })
     } catch (error) {
       if (error.errorCode === ErrorCodes.ENTITY_ALREADY_FOUND) {
         throw error
@@ -128,5 +114,34 @@ export class SkillService {
       data: mappedData,
       pagination,
     }
+  }
+
+  async listSkillsAsItems(payload: FetchSkillAsListItemDto) {
+    const qb = this.skillRepository.createQueryBuilder('skill')
+    qb.limit(10)
+    applySkillFilter(qb, payload)
+    const data = await qb.getMany()
+
+    const mappedSkillData = data.map((skill) => ({
+      id: skill.id,
+      title: skill.title,
+    }))
+
+    return {
+      data: mappedSkillData,
+    }
+  }
+
+  async deleteSkill(id: number) {
+    console.log(id)
+    const skillFound = await this.skillRepository.findOneOrFail({
+      where: { id },
+    })
+    await this.skillRepository.softRemove(skillFound)
+
+    return getDeleteSuccessMessage({
+      entityName: 'skill',
+      entityId: skillFound.id,
+    })
   }
 }
