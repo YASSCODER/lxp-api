@@ -4,18 +4,22 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   JoinColumn,
+  OneToMany,
 } from 'typeorm'
 import { FileEmbedded } from '../embedded/file.entity'
 import { Skill } from './skills.entity'
 import { BaseModel } from '../types/base-model.entity'
+import { LearnerModuleLinker } from './learner-module-link.entity'
+import { LearnPath } from './learn-path.entity'
+import { NameEmbedded } from '../embedded/name.entity'
 
 @Entity('module')
-export class Module extends BaseModel {
+export class LearningUnit extends BaseModel {
   @PrimaryGeneratedColumn()
   id: number
 
   @Column({ type: 'varchar', nullable: false, unique: true })
-  title: string
+  title: NameEmbedded
 
   @Column({ type: 'varchar', nullable: true })
   description: string
@@ -29,4 +33,10 @@ export class Module extends BaseModel {
   @ManyToOne(() => Skill, (skill) => skill.modules)
   @JoinColumn({ name: 'skillId' })
   skill: Skill
+
+  @OneToMany(() => LearnPath, (lp) => lp.module)
+  learnPaths: LearnPath[]
+
+  @OneToMany(() => LearnerModuleLinker, (lml) => lml.module)
+  learnerLinks: LearnerModuleLinker[]
 }
