@@ -1,10 +1,13 @@
-import { Entity, ManyToOne, Column } from 'typeorm'
+import { Entity, ManyToOne, Column, PrimaryGeneratedColumn } from 'typeorm'
 import { BaseModel } from '../types/base-model.entity'
 import { Learner } from './learner.entity'
 import { Module } from './module.entity'
 
 @Entity('learner_module_linker')
 export class LearnerModuleLinker extends BaseModel {
+  @PrimaryGeneratedColumn()
+  id: number
+
   @ManyToOne(() => Learner, (learner) => learner.moduleLinks)
   learner: Learner
 

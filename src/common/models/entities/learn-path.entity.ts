@@ -9,9 +9,13 @@ import {
 import { BaseModel } from '../types/base-model.entity'
 import { Course } from './course.entity'
 import { LearnerCourseLinker } from './learner-course-linker.entity'
-import { LearnerLearnPath } from './learner-learn-path-link.entity'
 import { JoinColumn } from 'typeorm'
 import { Module } from './module.entity'
+import { LearnerLearnPath } from './learner-learn-path-link.entity'
+
+// Type alias to avoid circular import
+type LearnerLearnPathType =
+  import('./learner-learn-path-link.entity').LearnerLearnPath
 
 @Entity('learn_path')
 export class LearnPath extends BaseModel {
@@ -37,7 +41,6 @@ export class LearnPath extends BaseModel {
   @JoinColumn({ name: 'moduleId' })
   module: Module
 
-  @ManyToOne(() => LearnerLearnPath, (lpl) => lpl.learner)
-  @JoinColumn({ name: 'learnPathId' })
-  learnerLink: LearnerLearnPath
+  @OneToMany(() => LearnerLearnPath, (llp) => llp.learner)
+  learnerLinks: LearnerLearnPathType[]
 }
