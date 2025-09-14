@@ -13,7 +13,7 @@ import { LearnerModuleLinker } from './learner-module-link.entity'
 import { LearnPath } from './learn-path.entity'
 
 @Entity('module')
-export class Module extends BaseModel {
+export class LearningUnit extends BaseModel {
   @PrimaryGeneratedColumn()
   id: number
 

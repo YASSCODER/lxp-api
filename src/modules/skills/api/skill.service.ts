@@ -11,7 +11,6 @@ import {
   PaginationResult,
   PaginationService,
 } from '@/common/pagination/pagination.service'
-import { v4 as uuid } from 'uuid'
 import { S3Service } from '@/common/aws/service/s3.service'
 
 @Injectable()
@@ -22,21 +21,6 @@ export class SkillService {
     private readonly paginationService: PaginationService,
     private readonly s3Service: S3Service,
   ) {}
-
-  async uploadImage(file: Express.Multer.File) {
-    const key = uuid()
-    const contentType = file.mimetype
-
-    await this.s3Service.uploadFile(key, file.buffer, contentType)
-    const fileName = file.filename || file.originalname || key
-    const url = await this.s3Service.generateSignedDownloadUrl(key)
-
-    return {
-      key,
-      fileName,
-      url,
-    }
-  }
 
   async createSkill(payload: CreateSkillDto) {
     try {
