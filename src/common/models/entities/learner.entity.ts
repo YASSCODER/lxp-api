@@ -46,7 +46,7 @@ export class Learner extends BaseModel {
   courseLink: LearnerCourseLinker[]
 
   @OneToMany(() => LearnerLearnPath, (lpl) => lpl.learner)
-  learnPathLink: LearnerCourseLinker[]
+  learnPathLink: LearnerLearnPath[]
 
   @OneToMany(() => LearnerModuleLinker, (lml) => lml.learner)
   moduleLinks: LearnerModuleLinker[]

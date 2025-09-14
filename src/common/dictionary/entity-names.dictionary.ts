@@ -56,7 +56,21 @@ export const ENTITY_NAME_DICTIONARY: Record<
     ar: 'ربط شارة المتعلم',
   },
 
-  // Default fallback
+  Module: {
+    en: 'Module',
+    ar: 'الوحدات الدراسية',
+  },
+
+  Course: {
+    en: 'Course',
+    ar: 'مساق',
+  },
+
+  LearnPath: {
+    en: 'Learning Path',
+    ar: 'مسار التعلم',
+  },
+
   Entity: {
     en: 'Entity',
     ar: 'كيان',

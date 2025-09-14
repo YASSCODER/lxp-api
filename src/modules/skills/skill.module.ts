@@ -3,10 +3,12 @@ import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { SkillService } from './api/skill.service'
 import { SkillController } from './api/skill.controller'
+import { PaginationService } from '@/common/pagination/pagination.service'
+import { S3Service } from '@/common/aws/service/s3.service'
 
 @Module({
   imports: [TypeOrmModule.forFeature([Skill])],
-  providers: [SkillService],
+  providers: [SkillService, PaginationService, S3Service],
   controllers: [SkillController],
 })
 export class SkillModule {}
