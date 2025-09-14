@@ -11,6 +11,7 @@ import {
 import { BaseModel } from '../types/base-model.entity'
 import { Instructor } from './instructor.entity'
 import { Skill } from './skills.entity'
+import { ProficiencyLevelEnum } from '@/common/enum/proficiency-level.enum'
 
 @Entity('instructor_skill')
 @Unique(['instructorId', 'skillId'])
@@ -26,8 +27,8 @@ export class InstructorSkillLinker extends BaseModel {
   @Index()
   skillId: number
 
-  @Column({ type: 'int', default: 1 })
-  proficiencyLevel: number
+  @Column({ type: 'varchar', nullable: false })
+  proficiencyLevel: ProficiencyLevelEnum
 
   @Column({ type: 'int', nullable: true })
   yearsOfExperience: number

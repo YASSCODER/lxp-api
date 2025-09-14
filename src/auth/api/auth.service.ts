@@ -12,7 +12,10 @@ import { InstructorSignUpDto } from '../dto/instructor-sign-up.dto'
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcryptjs'
 import { UserRole } from '@/common/enum/user-role.enum'
+import { ProficiencyLevelEnum } from '@/common/enum/proficiency-level.enum'
 import { NameEmbedded } from '@/common/models/embedded/name.entity'
+import { InstructorSkillLinker } from '../../common/models/entities/instructor-skill-linker.entity'
+import { getCreateSuccessMessage } from '@/common/utils/success-messages.utils'
 
 @Injectable()
 export class AuthService {
@@ -25,6 +28,8 @@ export class AuthService {
     private readonly instructorRepository: Repository<Instructor>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    @InjectRepository(InstructorSkillLinker)
+    private readonly instructorSkillLinkerRepository: Repository<InstructorSkillLinker>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -154,50 +159,53 @@ export class AuthService {
   }
 
   public async signupInstructor(instructorSignUpDto: InstructorSignUpDto) {
-    const existingUser = await this.userRepository.findOne({
-      where: [
-        { email: ILike(instructorSignUpDto.email) },
-        { phone: instructorSignUpDto.phone },
-      ],
+    const existingUserByEmail = await this.userRepository.findOne({
+      where: { email: ILike(instructorSignUpDto.email) },
     })
 
-    if (existingUser) {
+    if (existingUserByEmail) {
       throw new ConflictException({
         message: {
-          en: 'User with this email or phone already exists',
-          ar: 'المستخدم بهذا البريد الإلكتروني أو الهاتف موجود بالفعل',
+          en: `User with email ${instructorSignUpDto.email} already exists`,
+          ar: `المستخدم بهذا البريد الإلكتروني ${instructorSignUpDto.email} موجود بالفعل`,
         },
       })
     }
 
-    let instructorRole = await this.roleRepository.findOne({
-      where: {
-        title: {
-          en: UserRole.INSTRUCTOR,
-          ar: 'مدرب',
-        } as NameEmbedded,
-      },
+    const existingUserByPhone = await this.userRepository.findOne({
+      where: { phone: instructorSignUpDto.phone },
     })
 
-    if (!instructorRole) {
-      instructorRole = this.roleRepository.create({
-        title: {
-          en: UserRole.INSTRUCTOR,
-          ar: 'مدرب',
-        } as NameEmbedded,
+    if (existingUserByPhone) {
+      throw new ConflictException({
+        message: {
+          en: `User with phone ${instructorSignUpDto.phone} already exists`,
+          ar: `المستخدم بهذا الهاتف ${instructorSignUpDto.phone} موجود بالفعل`,
+        },
       })
-      instructorRole = await this.roleRepository.save(instructorRole)
     }
+
+    const instructorRole = await this.roleRepository
+      .createQueryBuilder('role')
+      .where("role.title->>'en' = :name", { name: UserRole.INSTRUCTOR })
+      .getOne()
 
     const hashedPassword = await bcrypt.hash(instructorSignUpDto.password, 10)
 
     const instructor = this.instructorRepository.create({
-      proficiencyLevel: instructorSignUpDto.proficiencyLevel,
-      yearsOfExperience: instructorSignUpDto.yearsOfExperience,
       rating: 0,
       isVerified: false,
     })
     const savedInstructor = await this.instructorRepository.save(instructor)
+
+    const skillLink = this.instructorSkillLinkerRepository.create({
+      instructorId: savedInstructor.id,
+      skillId: instructorSignUpDto.skillId,
+      yearsOfExperience: instructorSignUpDto.yearsOfExperience,
+      proficiencyLevel: instructorSignUpDto.proficiencyLevel,
+    })
+
+    await this.instructorSkillLinkerRepository.save(skillLink)
 
     const user = this.userRepository.create({
       email: instructorSignUpDto.email,
@@ -211,12 +219,9 @@ export class AuthService {
     })
     const savedUser = await this.userRepository.save(user)
 
-    return {
-      status: HttpStatus.CREATED,
-      message: {
-        en: 'Instructor account created successfully',
-        ar: 'تم إنشاء حساب المدرب بنجاح',
-      },
-    }
+    return getCreateSuccessMessage({
+      entityName: 'user',
+      entityId: savedUser.id,
+    })
   }
 }
