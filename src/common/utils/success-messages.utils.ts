@@ -30,19 +30,16 @@ export function getSuccessMessage(
 ): SuccessMessageResponse {
   const { entityName, entityId, customEntityName } = options
 
-  // Get entity names from dictionary or use custom names
   const entityNames =
     customEntityName ||
     (entityName
       ? ENTITY_NAME_DICTIONARY[entityName.toLowerCase()]
       : { en: 'Item', ar: 'عنصر' })
 
-  // Add fallback in case entity name is not found in dictionary
   const entityNameEn =
     entityNames?.en?.toLowerCase() || entityName?.toLowerCase() || 'item'
   const entityNameAr = entityNames?.ar || entityName || 'عنصر'
 
-  // Create ID suffix if provided
   const idSuffix = entityId ? ` with ID: ${entityId}` : ''
   const idSuffixAr = entityId ? ` بالمعرّف: ${entityId}` : ''
 
