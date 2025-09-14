@@ -15,12 +15,6 @@ export class Instructor extends BaseModel {
   @Column({ type: 'boolean', default: false })
   isVerified: boolean
 
-  @Column({ type: 'varchar', nullable: false })
-  proficiencyLevel: ProficiencyLevelEnum
-
-  @Column({ type: 'varchar', nullable: false })
-  yearsOfExperience: string
-
   @OneToMany(() => User, (user) => user.instructor)
   users: User[]
 

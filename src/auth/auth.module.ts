@@ -14,10 +14,17 @@ import { JwtStrategy } from './strategies/jwt.strategy'
 import { LocalAuthGuard } from './guards/local-auth.guard'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { RolesGuard } from './guards/roles.guard'
+import { InstructorSkillLinker } from '@/common/models/entities/instructor-skill-linker.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Learner, Instructor, Role]),
+    TypeOrmModule.forFeature([
+      User,
+      Learner,
+      Instructor,
+      Role,
+      InstructorSkillLinker,
+    ]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
