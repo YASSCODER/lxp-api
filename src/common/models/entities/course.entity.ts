@@ -10,14 +10,15 @@ import { BaseModel } from '../types/base-model.entity'
 import { FileEmbedded } from '../embedded/file.entity'
 import { LearnerCourseLinker } from './learner-course-linker.entity'
 import { LearnPath } from './learn-path.entity'
+import { NameEmbedded } from '../embedded/name.entity'
 
 @Entity('course')
 export class Course extends BaseModel {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ type: 'varchar', nullable: false })
-  title: string
+  @Column({ type: 'jsonb', nullable: false })
+  title: NameEmbedded
 
   @Column({ type: 'jsonb', nullable: false })
   file: FileEmbedded
