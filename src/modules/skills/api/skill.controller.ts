@@ -34,7 +34,7 @@ export class SkillController {
 
   @Get('list')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.INSTRUCTOR, UserRole.LEARNER)
   async listSkills(@Query() payload: FetchSkillAsListItemDto) {
     return await this.skillService.listSkillsAsItems(payload)
   }
