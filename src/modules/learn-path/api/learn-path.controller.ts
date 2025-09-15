@@ -30,7 +30,7 @@ export class LearnPathController {
 
   @Get('list-items')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.INSTRUCTOR, UserRole.LEARNER)
   async listLearnPathItems(@Query() query: FetchLearnPathAsItem) {
     return await this.learnPathService.listLearnPathItem(query)
   }
