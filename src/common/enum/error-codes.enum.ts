@@ -7,4 +7,5 @@ export enum ErrorCodes {
   ENTITY_ALREADY_FOUND,
   FILE_REQUIRED,
   FILE_TYPE_NOT_ALLOWED,
+  TITLE_EXISTS,
 }

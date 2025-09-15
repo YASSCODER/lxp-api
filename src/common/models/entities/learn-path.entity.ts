@@ -12,6 +12,7 @@ import { LearnerCourseLinker } from './learner-course-linker.entity'
 import { JoinColumn } from 'typeorm'
 import { LearnerLearnPath } from './learner-learn-path-link.entity'
 import { LearningUnit } from './module.entity'
+import { NameEmbedded } from '../embedded/name.entity'
 
 // Type alias to avoid circular import
 type LearnerLearnPathType =
@@ -22,8 +23,8 @@ export class LearnPath extends BaseModel {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ type: 'varchar', nullable: false })
-  title: string
+  @Column({ type: 'jsonb', nullable: false })
+  title: NameEmbedded
 
   @Column({ type: 'integer', nullable: false })
   learningUnitId: number

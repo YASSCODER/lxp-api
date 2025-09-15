@@ -32,9 +32,7 @@ export async function bootstrap() {
   const host = (appConfig as any).host ?? '0.0.0.0'
 
   await app.listen(port, host)
-  console.log(
-    `🚀 ${appConfig.name} up on http://${host}:${port} (env=${appConfig.env})`,
-  )
+  console.log(`🚀`)
 
   if (module?.hot) {
     module.hot.accept()
