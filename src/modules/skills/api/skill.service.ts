@@ -1,7 +1,7 @@
 import { Skill } from '@/common/models/entities/skills.entity'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { DataSource, In, Repository } from 'typeorm'
 import { CreateSkillDto } from '../dto/create-skill.dto'
 import { throwFormValidationError } from '@/common/utils/errors.utils'
 import { ErrorCodes } from '@/common/enum/error-codes.enum'
@@ -17,6 +17,14 @@ import {
   getCreateSuccessMessage,
   getDeleteSuccessMessage,
 } from '@/common/utils/success-messages.utils'
+import { AssignSkillToLearner } from '../dto/assign-skill-learner.dto'
+import { User } from '@/common/models/entities/user.entity'
+import { LearnerSkillLinker } from '@/common/models/entities/learner-skill-linker.entity'
+import { LearnerModuleLinker } from '@/common/models/entities/learner-module-link.entity'
+import { LearnPath } from '@/common/models/entities/learn-path.entity'
+import { Course } from '@/common/models/entities/course.entity'
+import { LearnerLearnPath } from '@/common/models/entities/learner-learn-path-link.entity'
+import { LearnerCourseLinker } from '@/common/models/entities/learner-course-linker.entity'
 
 @Injectable()
 export class SkillService {
@@ -25,6 +33,7 @@ export class SkillService {
     private readonly skillRepository: Repository<Skill>,
     private readonly paginationService: PaginationService,
     private readonly s3Service: S3Service,
+    private readonly dataSource: DataSource,
   ) {}
 
   async createSkill(payload: CreateSkillDto) {
@@ -143,5 +152,108 @@ export class SkillService {
       entityName: 'skill',
       entityId: skillFound.id,
     })
+  }
+
+  async assignSkillToLearner(user: User, payload: AssignSkillToLearner) {
+    const queryRunner = this.dataSource.createQueryRunner()
+    await queryRunner.connect()
+    await queryRunner.startTransaction()
+
+    try {
+      const skillFound = await queryRunner.manager.findOne(Skill, {
+        where: { id: payload.skillId },
+        relations: {
+          modules: {
+            learnPaths: {
+              courses: true,
+            },
+          },
+        },
+      })
+
+      if (!skillFound) {
+        throwFormValidationError({
+          errorCode: ErrorCodes.ENTITY_NOT_FOUND,
+          id: {
+            message: {
+              en: `Skill not found with id: ${user.id}`,
+              ar: ``,
+            },
+          },
+        })
+      }
+
+      const moduleIds = skillFound.modules.map((m) => m.id)
+
+      const learnPathsFound = await queryRunner.manager.find(LearnPath, {
+        where: { learningUnitId: In(moduleIds) },
+      })
+      const learnPathsId = learnPathsFound.map((lp) => lp.id)
+
+      const courseFound = await queryRunner.manager.find(Course, {
+        where: { learnPathId: In(learnPathsId) },
+      })
+      const courseIds = courseFound.map((c) => c.id)
+
+      const userFound = await queryRunner.manager.findOne(User, {
+        where: { id: user.id },
+        relations: { learner: true },
+      })
+
+      if (!userFound?.learnerId) {
+        throwFormValidationError({
+          errorCode: ErrorCodes.ENTITY_NOT_FOUND,
+          id: {
+            message: {
+              en: 'User does not have a learner profile',
+              ar: 'المستخدم ليس لديه ملف متعلّم',
+            },
+          },
+        })
+      }
+
+      const learnerSkillEntity = queryRunner.manager.create(
+        LearnerSkillLinker,
+        {
+          learnerId: userFound.learnerId,
+          skillId: skillFound.id,
+        },
+      )
+      await queryRunner.manager.save(learnerSkillEntity)
+
+      const moduleEntities = moduleIds.map((moduleId) =>
+        queryRunner.manager.create(LearnerModuleLinker, {
+          learnerId: userFound.learnerId,
+          moduleId,
+        }),
+      )
+
+      const learnPathEntities = learnPathsId.map((lpId) =>
+        queryRunner.manager.create(LearnerLearnPath, {
+          learnerId: userFound.learnerId,
+          learnPathId: lpId,
+        }),
+      )
+
+      const courseEntities = courseIds.map((cId) =>
+        queryRunner.manager.create(LearnerCourseLinker, {
+          learnerId: userFound.learnerId,
+          courseId: cId,
+        }),
+      )
+
+      await queryRunner.manager.save([
+        ...moduleEntities,
+        ...learnPathEntities,
+        ...courseEntities,
+      ])
+
+      await queryRunner.commitTransaction()
+    } catch (error) {
+      await queryRunner.rollbackTransaction()
+      throw error
+    } finally {
+      await queryRunner.release()
+    }
   }
 }
