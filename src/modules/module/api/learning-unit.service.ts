@@ -9,6 +9,8 @@ import {
   getDeleteSuccessMessage,
 } from '@/common/utils/success-messages.utils'
 import { UpdateModuleDto } from '../dto/update-module.dto'
+import { FetchModuleAsListItemDto } from '../dto/fetch-module.dto'
+import { applyModuleFilter } from '../helper/module-filter.helper'
 
 @Injectable()
 export class LearningUnitService {
@@ -43,5 +45,21 @@ export class LearningUnitService {
       entityName: 'module',
       entityId: id,
     })
+  }
+
+  async listModuleAsItems(payload: FetchModuleAsListItemDto) {
+    const qb = this.moduleRepository.createQueryBuilder('module')
+    qb.limit(10)
+    applyModuleFilter(qb, payload)
+    const data = await qb.getMany()
+
+    const mappedSkillData = data.map((skill) => ({
+      id: skill.id,
+      title: skill.title,
+    }))
+
+    return {
+      data: mappedSkillData,
+    }
   }
 }
