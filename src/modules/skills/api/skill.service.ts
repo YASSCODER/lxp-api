@@ -249,6 +249,13 @@ export class SkillService {
       ])
 
       await queryRunner.commitTransaction()
+      return {
+        status: 201,
+        message: {
+          en: `skill with id: ${skillFound.id} assigned to learner with id : ${userFound.learnerId}`,
+          ar: `تم ربط المهارة بالمعرّف: ${skillFound.id} مع المتعلّم بالمعرّف: ${userFound.learnerId}`,
+        },
+      }
     } catch (error) {
       await queryRunner.rollbackTransaction()
       throw error
