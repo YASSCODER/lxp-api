@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -57,5 +58,15 @@ export class SkillController {
     @Body() payload: AssignSkillToLearner,
   ) {
     return await this.skillService.assignSkillToLearner(req.user, payload)
+  }
+
+  @Patch('update-learner-skill/:learnerId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async updateLearnerSkill(
+    @Param('learnerId') id: number,
+    @Body() payload: AssignSkillToLearner,
+  ) {
+    return await this.skillService.updateLearnerSkill(id, payload)
   }
 }
