@@ -31,6 +31,8 @@ export class SkillService {
   constructor(
     @InjectRepository(Skill)
     private readonly skillRepository: Repository<Skill>,
+    @InjectRepository(LearnerSkillLinker)
+    private readonly learnerSkillLinkerRepository: Repository<LearnerSkillLinker>,
     private readonly paginationService: PaginationService,
     private readonly s3Service: S3Service,
     private readonly dataSource: DataSource,
@@ -249,6 +251,161 @@ export class SkillService {
       ])
 
       await queryRunner.commitTransaction()
+      return {
+        status: 201,
+        message: {
+          en: `skill with id: ${skillFound.id} assigned to learner with id : ${userFound.learnerId}`,
+          ar: `تم ربط المهارة بالمعرّف: ${skillFound.id} مع المتعلّم بالمعرّف: ${userFound.learnerId}`,
+        },
+      }
+    } catch (error) {
+      await queryRunner.rollbackTransaction()
+      throw error
+    } finally {
+      await queryRunner.release()
+    }
+  }
+
+  async updateLearnerSkill(id, payload: AssignSkillToLearner) {
+    const queryRunner = this.dataSource.createQueryRunner()
+    await queryRunner.connect()
+    await queryRunner.startTransaction()
+
+    try {
+      const skillFound = await queryRunner.manager.findOne(Skill, {
+        where: { id: payload.skillId },
+        relations: {
+          modules: { learnPaths: { courses: true } },
+        },
+      })
+
+      if (!skillFound) {
+        throwFormValidationError({
+          errorCode: ErrorCodes.ENTITY_NOT_FOUND,
+          id: {
+            message: {
+              en: `Skill not found with id: ${payload.skillId}`,
+              ar: `المهارة غير موجودة بالمعرّف: ${payload.skillId}`,
+            },
+          },
+        })
+      }
+
+      const moduleIds = skillFound.modules.map((m) => m.id)
+      const learnPathsFound = await queryRunner.manager.find(LearnPath, {
+        where: { learningUnitId: In(moduleIds) },
+      })
+      const learnPathsId = learnPathsFound.map((lp) => lp.id)
+
+      const courseFound = await queryRunner.manager.find(Course, {
+        where: { learnPathId: In(learnPathsId) },
+      })
+      const courseIds = courseFound.map((c) => c.id)
+
+      const userFound = await queryRunner.manager.findOne(User, {
+        where: { id: id },
+        relations: { learner: true },
+      })
+
+      if (!userFound?.learnerId) {
+        throwFormValidationError({
+          errorCode: ErrorCodes.ENTITY_NOT_FOUND,
+          id: {
+            message: {
+              en: 'User does not have a learner profile',
+              ar: 'المستخدم ليس لديه ملف متعلّم',
+            },
+          },
+        })
+      }
+
+      const learnerId = userFound.learnerId
+
+      let learnerSkillEntity = await queryRunner.manager.findOne(
+        LearnerSkillLinker,
+        {
+          where: { learnerId, skillId: skillFound.id },
+        },
+      )
+
+      if (learnerSkillEntity) {
+        Object.assign(learnerSkillEntity, payload)
+      } else {
+        learnerSkillEntity = queryRunner.manager.create(LearnerSkillLinker, {
+          learnerId,
+          skillId: skillFound.id,
+        })
+      }
+      await queryRunner.manager.save(learnerSkillEntity)
+
+      const moduleEntities = await Promise.all(
+        moduleIds.map(async (moduleId) => {
+          let entity = await queryRunner.manager.findOne(LearnerModuleLinker, {
+            where: { learnerId, moduleId },
+          })
+
+          if (entity) {
+            Object.assign(entity, { ...payload })
+          } else {
+            entity = queryRunner.manager.create(LearnerModuleLinker, {
+              learnerId,
+              moduleId,
+            })
+          }
+          return entity
+        }),
+      )
+
+      const learnPathEntities = await Promise.all(
+        learnPathsId.map(async (lpId) => {
+          let entity = await queryRunner.manager.findOne(LearnerLearnPath, {
+            where: { learnerId, learnPathId: lpId },
+          })
+
+          if (entity) {
+            Object.assign(entity, { ...payload })
+          } else {
+            entity = queryRunner.manager.create(LearnerLearnPath, {
+              learnerId,
+              learnPathId: lpId,
+            })
+          }
+          return entity
+        }),
+      )
+
+      const courseEntities = await Promise.all(
+        courseIds.map(async (cId) => {
+          let entity = await queryRunner.manager.findOne(LearnerCourseLinker, {
+            where: { learnerId, courseId: cId },
+          })
+
+          if (entity) {
+            Object.assign(entity, { ...payload })
+          } else {
+            entity = queryRunner.manager.create(LearnerCourseLinker, {
+              learnerId,
+              courseId: cId,
+            })
+          }
+          return entity
+        }),
+      )
+
+      await queryRunner.manager.save([
+        ...moduleEntities,
+        ...learnPathEntities,
+        ...courseEntities,
+      ])
+
+      await queryRunner.commitTransaction()
+      return {
+        status: 200,
+        message: {
+          en: `Skill ${skillFound.id} and related entities updated for learner ${learnerId}`,
+          ar: `تم تحديث المهارة ${skillFound.id} والكيانات المرتبطة للمتعلّم ${learnerId}`,
+        },
+      }
     } catch (error) {
       await queryRunner.rollbackTransaction()
       throw error
