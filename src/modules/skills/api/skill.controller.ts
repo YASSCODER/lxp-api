@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common'
 import { SkillService } from './skill.service'
@@ -15,6 +16,8 @@ import { Roles } from '@/auth/decorators/roles.decorator'
 import { UserRole } from '@/common/enum/user-role.enum'
 import { CreateSkillDto } from '../dto/create-skill.dto'
 import { FetchSkillAsListItemDto, FetchSkillDto } from '../dto/fetch-skill.dto'
+import { User } from '@/common/models/entities/user.entity'
+import { AssignSkillToLearner } from '../dto/assign-skill-learner.dto'
 
 @Controller('skill')
 export class SkillController {
@@ -44,5 +47,15 @@ export class SkillController {
   @Roles(UserRole.ADMIN)
   async deleteSkill(@Param('skillId') skillId: number) {
     return await this.skillService.deleteSkill(skillId)
+  }
+
+  @Post('assign-learner')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.LEARNER)
+  async assignSkillToLearner(
+    @Req() req: { user: User },
+    @Body() payload: AssignSkillToLearner,
+  ) {
+    return await this.skillService.assignSkillToLearner(req.user, payload)
   }
 }
