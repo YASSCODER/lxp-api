@@ -5,15 +5,18 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common'
 import { LearningUnitService } from './learning-unit.service'
 import { Roles } from '@/auth/decorators/roles.decorator'
 import { CreateModuleDto } from '../dto/craete-module.dto'
 import { UpdateModuleDto } from '../dto/update-module.dto'
+import { FetchModuleAsListItemDto } from '../dto/fetch-module.dto'
 
 @Controller('module')
 export class LearningUnitController {
@@ -41,5 +44,12 @@ export class LearningUnitController {
   @Roles(UserRole.ADMIN)
   async deleteModule(@Param('moduleId') moduleId: number) {
     return await this.moduleService.deleteModule(moduleId)
+  }
+
+  @Get('list')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.INSTRUCTOR, UserRole.LEARNER)
+  async listSkills(@Query() payload: FetchModuleAsListItemDto) {
+    return await this.moduleService.listModuleAsItems(payload)
   }
 }
