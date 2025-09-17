@@ -413,4 +413,5 @@ export class SkillService {
       await queryRunner.release()
     }
   }
+  
 }

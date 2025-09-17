@@ -69,4 +69,5 @@ export class SkillController {
   ) {
     return await this.skillService.updateLearnerSkill(id, payload)
   }
+  
 }
