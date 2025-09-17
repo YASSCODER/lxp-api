@@ -6,9 +6,19 @@ import { PaginationService } from '@/common/pagination/pagination.service'
 import { CourseController } from './api/course.controller'
 import { User } from '@/common/models/entities/user.entity'
 import { LearnerCourseLinker } from '@/common/models/entities/learner-course-linker.entity'
+import { LearnerLearnPath } from '@/common/models/entities/learner-learn-path-link.entity'
+import { LearnPath } from '@/common/models/entities/learn-path.entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Course, User, LearnerCourseLinker])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Course,
+      User,
+      LearnerCourseLinker,
+      LearnPath,
+      LearnerLearnPath,
+    ]),
+  ],
   providers: [CourseService, PaginationService],
   controllers: [CourseController],
   exports: [],

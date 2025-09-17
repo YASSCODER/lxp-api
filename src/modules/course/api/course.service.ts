@@ -5,10 +5,12 @@ import { throwFormValidationError } from '@/common/utils/errors.utils'
 import { getCreateSuccessMessage } from '@/common/utils/success-messages.utils'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { In, Repository } from 'typeorm'
 import { CreateCourseDto } from '../dto/craete-course.dto'
 import { User } from '@/common/models/entities/user.entity'
 import { LearnerCourseLinker } from '@/common/models/entities/learner-course-linker.entity'
+import { LearnPath } from '@/common/models/entities/learn-path.entity'
+import { LearnerLearnPath } from '@/common/models/entities/learner-learn-path-link.entity'
 
 @Injectable()
 export class CourseService {
@@ -19,6 +21,10 @@ export class CourseService {
     private readonly learnerCourseLinkRepository: Repository<LearnerCourseLinker>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(LearnPath)
+    private readonly learnPathRepository: Repository<LearnPath>,
+    @InjectRepository(LearnerLearnPath)
+    private readonly learnerLearnPathLinkRepository: Repository<LearnerLearnPath>,
   ) {}
 
   async createCourse(payload: CreateCourseDto) {
@@ -71,7 +77,36 @@ export class CourseService {
       where: {
         id: courseId,
       },
+      relations: {
+        learnPath: true,
+      },
     })
+
+
+    const learnPathFound = await this.learnPathRepository.findOne({
+      where: { id: courseFound.learnPathId },
+      relations: {
+        courses: true,
+      },
+    })
+
+    if (!learnPathFound) {
+      throwFormValidationError({
+        errorCode: ErrorCodes.ENTITY_NOT_FOUND,
+        message: {
+          en: `learn path with id: ${courseFound.learnPathId} not found`,
+        },
+      })
+    }
+
+    const learnerLearnPathLink =
+      await this.learnerLearnPathLinkRepository.findOne({
+        where: {
+          learnPathId: learnPathFound.id,
+        },
+      })
+
+    const courseIds = learnPathFound.courses.map((c) => c.id)
 
     if (!courseFound) {
       throwFormValidationError({
@@ -92,9 +127,23 @@ export class CourseService {
         },
       })
 
+
     await this.learnerCourseLinkRepository.update(learnerCourseLinkFound.id, {
       completed: true,
     })
+
+    const isLast = courseIds[courseIds.length - 1] === courseFound.id
+
+
+    if (isLast) {
+      await this.learnerLearnPathLinkRepository.update(
+        learnerLearnPathLink.id,
+        {
+          completed: true,
+          progress: 100,
+        },
+      )
+    }
 
     return {
       status: HttpStatus.OK,
