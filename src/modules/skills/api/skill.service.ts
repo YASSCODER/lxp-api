@@ -266,7 +266,7 @@ export class SkillService {
     }
   }
 
-  async updateLearnerSkill(id, payload: AssignSkillToLearner) {
+  async updateLearnerSkill(id: number, payload: AssignSkillToLearner) {
     const queryRunner = this.dataSource.createQueryRunner()
     await queryRunner.connect()
     await queryRunner.startTransaction()
@@ -303,7 +303,7 @@ export class SkillService {
       const courseIds = courseFound.map((c) => c.id)
 
       const userFound = await queryRunner.manager.findOne(User, {
-        where: { id: id },
+        where: { learnerId: id },
         relations: { learner: true },
       })
 
