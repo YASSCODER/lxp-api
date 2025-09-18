@@ -62,4 +62,14 @@ export class LearningUnitService {
       data: mappedSkillData,
     }
   }
+
+  async getTotalCount() {
+    const result = await this.moduleRepository
+      .createQueryBuilder('learningUnit')
+      .getCount()
+
+    return {
+      value: result,
+    }
+  }
 }

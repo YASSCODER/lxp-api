@@ -51,5 +51,13 @@ export class LearningUnitController {
   @Roles(UserRole.ADMIN, UserRole.INSTRUCTOR, UserRole.LEARNER)
   async listSkills(@Query() payload: FetchModuleAsListItemDto) {
     return await this.moduleService.listModuleAsItems(payload)
+    return await this.moduleService.getTotalCount()
+  }
+
+  @Get('total-count')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async getTotalCount() {
+    return await this.moduleService.getTotalCount()
   }
 }

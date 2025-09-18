@@ -36,6 +36,32 @@ export class SkillController {
     return await this.skillService.listAllSkillsWithPagination(payload)
   }
 
+  @Get('learner/paginate')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.LEARNER)
+  async listAllSkillsForLearner(
+    @Query() payload: FetchSkillDto,
+    @Req() req: { user: User },
+  ) {
+    return await this.skillService.listAllSkillsForContractorWithPagination(
+      payload,
+      req.user,
+    )
+  }
+
+  @Get('instructor/paginate')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.INSTRUCTOR)
+  async listAllSkillsInstructor(
+    @Query() payload: FetchSkillDto,
+    @Req() req: { user: User },
+  ) {
+    return await this.skillService.listAllSkillsForInstructorWithPagination(
+      payload,
+      req.user,
+    )
+  }
+
   @Get('list')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.INSTRUCTOR, UserRole.LEARNER)
@@ -69,5 +95,11 @@ export class SkillController {
   ) {
     return await this.skillService.updateLearnerSkill(id, payload)
   }
-  
+
+  @Get('total-count')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async getTotalCount() {
+    return await this.skillService.getTotalCount()
+  }
 }
