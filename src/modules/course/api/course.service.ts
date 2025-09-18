@@ -81,8 +81,7 @@ export class CourseService {
         learnPath: true,
       },
     })
-
-
+    
     const learnPathFound = await this.learnPathRepository.findOne({
       where: { id: courseFound.learnPathId },
       relations: {
@@ -126,14 +125,11 @@ export class CourseService {
           courseId,
         },
       })
-
-
     await this.learnerCourseLinkRepository.update(learnerCourseLinkFound.id, {
       completed: true,
     })
 
     const isLast = courseIds[courseIds.length - 1] === courseFound.id
-
 
     if (isLast) {
       await this.learnerLearnPathLinkRepository.update(
@@ -151,6 +147,16 @@ export class CourseService {
         en: 'course completed',
         ar: 'تم إكمال الدورة بنجاح',
       },
+    }
+  }
+
+  async getTotalCount() {
+    const result = await this.courseRepository
+      .createQueryBuilder('course')
+      .getCount()
+
+    return {
+      value: result,
     }
   }
 }
