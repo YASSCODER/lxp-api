@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { BaseModel } from '../types/base-model.entity'
 import { BadgeLearnerLink } from './badge-learner-link.entity'
 import { User } from './user.entity'
@@ -30,8 +30,8 @@ export class Learner extends BaseModel {
   @Column({ type: 'varchar', nullable: true })
   targetLevels: TargetSkillLevel
 
-  @OneToMany(() => User, (user) => user.learner)
-  users: User[]
+  @OneToOne(() => User, (user) => user.learner)
+  user: User
 
   @OneToMany(() => BadgeLearnerLink, (link) => link.learner)
   badgeLinks: BadgeLearnerLink[]
