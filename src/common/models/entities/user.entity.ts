@@ -3,6 +3,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { BaseModel } from '../types/base-model.entity'
@@ -47,11 +48,11 @@ export class User extends BaseModel {
   @JoinColumn({ name: 'roleId' })
   role: Role
 
-  @ManyToOne(() => Learner, (learner) => learner.users)
+  @OneToOne(() => Learner, (learner) => learner.user)
   @JoinColumn({ name: 'learnerId' })
   learner: Learner
 
-  @ManyToOne(() => Instructor, (instructor) => instructor.users)
+  @OneToOne(() => Instructor, (instructor) => instructor.user)
   @JoinColumn({ name: 'instructorId' })
   instructor: Instructor
 }

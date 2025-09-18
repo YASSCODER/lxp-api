@@ -33,6 +33,8 @@ export class SkillService {
     private readonly skillRepository: Repository<Skill>,
     @InjectRepository(LearnerSkillLinker)
     private readonly learnerSkillLinkerRepository: Repository<LearnerSkillLinker>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly paginationService: PaginationService,
     private readonly s3Service: S3Service,
     private readonly dataSource: DataSource,
@@ -87,6 +89,126 @@ export class SkillService {
       .createQueryBuilder('skill')
       .leftJoinAndSelect('skill.modules', 'module')
       .leftJoinAndSelect('module.learnPaths', 'learnPath')
+
+    const { data, pagination } =
+      await this.paginationService.paginateWithQueryBuilder(
+        qb,
+        paginationParams,
+      )
+
+    const mappedData = await Promise.all(
+      data.map(async (skill) => {
+        const image = await this.s3Service.generateSignedDownloadUrl(
+          skill.file.key,
+        )
+        const module = await Promise.all(
+          skill.modules.map(async (module) => {
+            const image = await this.s3Service.generateSignedDownloadUrl(
+              module.file.key,
+            )
+            return {
+              id: module.id,
+              title: module.title,
+              image,
+            }
+          }),
+        )
+        return {
+          id: skill.id,
+          title: skill.title,
+          description: skill.description,
+          image,
+          module,
+        }
+      }),
+    )
+
+    return {
+      data: mappedData,
+      pagination,
+    }
+  }
+
+  async listAllSkillsForContractorWithPagination(
+    payload: FetchSkillDto,
+    user: User,
+  ): Promise<PaginationResult<Partial<Skill>>> {
+    const paginationParams = paginationParamsFormula(payload)
+
+    const userFound = await this.userRepository.findOne({
+      where: {
+        id: user.id,
+      },
+    })
+
+    const qb = this.skillRepository
+      .createQueryBuilder('skill')
+      .leftJoinAndSelect('skill.modules', 'module')
+      .leftJoinAndSelect('skill.learnerLinks', 'learnerLink')
+      .leftJoinAndSelect('module.learnPaths', 'learnPath')
+      .where('learnerLink.learnerId = :learnerId', {
+        learnerId: userFound.learnerId,
+      })
+
+    const { data, pagination } =
+      await this.paginationService.paginateWithQueryBuilder(
+        qb,
+        paginationParams,
+      )
+
+    const mappedData = await Promise.all(
+      data.map(async (skill) => {
+        const image = await this.s3Service.generateSignedDownloadUrl(
+          skill.file.key,
+        )
+        const module = await Promise.all(
+          skill.modules.map(async (module) => {
+            const image = await this.s3Service.generateSignedDownloadUrl(
+              module.file.key,
+            )
+            return {
+              id: module.id,
+              title: module.title,
+              image,
+            }
+          }),
+        )
+        return {
+          id: skill.id,
+          title: skill.title,
+          description: skill.description,
+          image,
+          module,
+        }
+      }),
+    )
+
+    return {
+      data: mappedData,
+      pagination,
+    }
+  }
+
+  async listAllSkillsForInstructorWithPagination(
+    payload: FetchSkillDto,
+    user: User,
+  ): Promise<PaginationResult<Partial<Skill>>> {
+    const paginationParams = paginationParamsFormula(payload)
+
+    const userFound = await this.userRepository.findOne({
+      where: {
+        id: user.id,
+      },
+    })
+
+    const qb = this.skillRepository
+      .createQueryBuilder('skill')
+      .leftJoinAndSelect('skill.modules', 'module')
+      .leftJoinAndSelect('skill.instructorLinks', 'instructorLink')
+      .leftJoinAndSelect('module.learnPaths', 'learnPath')
+      .where('instructorLink.instructorId = :instructorId', {
+        instructorId: userFound.instructorId,
+      })
 
     const { data, pagination } =
       await this.paginationService.paginateWithQueryBuilder(
@@ -413,5 +535,14 @@ export class SkillService {
       await queryRunner.release()
     }
   }
-  
+
+  async getTotalCount() {
+    const result = await this.skillRepository
+      .createQueryBuilder('skill')
+      .getCount()
+
+    return {
+      value: result,
+    }
+  }
 }

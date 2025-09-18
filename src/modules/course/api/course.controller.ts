@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Patch,
   Post,
@@ -34,5 +35,12 @@ export class CourseController {
     @Req() req: { user: User },
   ) {
     return await this.courseService.markAsCompleted(courseId, req.user)
+  }
+
+  @Get('total-count')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async getTotalCourse(){
+    return await this.courseService.getTotalCount()
   }
 }
