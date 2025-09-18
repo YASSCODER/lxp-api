@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm'
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { BaseModel } from '../types/base-model.entity'
 import { BadgeLearnerLink } from './badge-learner-link.entity'
 import { User } from './user.entity'

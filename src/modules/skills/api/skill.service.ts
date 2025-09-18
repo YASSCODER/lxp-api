@@ -33,8 +33,10 @@ export class SkillService {
     private readonly skillRepository: Repository<Skill>,
     @InjectRepository(LearnerSkillLinker)
     private readonly learnerSkillLinkerRepository: Repository<LearnerSkillLinker>,
+
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
     private readonly paginationService: PaginationService,
     private readonly s3Service: S3Service,
     private readonly dataSource: DataSource,

@@ -36,7 +36,6 @@ export class CourseController {
   ) {
     return await this.courseService.markAsCompleted(courseId, req.user)
   }
-
   @Get('total-count')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)

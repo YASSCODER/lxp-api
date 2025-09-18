@@ -81,7 +81,7 @@ export class CourseService {
         learnPath: true,
       },
     })
-
+    
     const learnPathFound = await this.learnPathRepository.findOne({
       where: { id: courseFound.learnPathId },
       relations: {
@@ -125,7 +125,6 @@ export class CourseService {
           courseId,
         },
       })
-
     await this.learnerCourseLinkRepository.update(learnerCourseLinkFound.id, {
       completed: true,
     })

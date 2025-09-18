@@ -6,10 +6,12 @@ import { SkillController } from './api/skill.controller'
 import { PaginationService } from '@/common/pagination/pagination.service'
 import { S3Service } from '@/common/aws/service/s3.service'
 import { LearnerSkillLinker } from '@/common/models/entities/learner-skill-linker.entity'
+
 import { User } from '@/common/models/entities/user.entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Skill, LearnerSkillLinker, User])],
+  imports: [TypeOrmModule.forFeature([Skill, LearnerSkillLinker])],
+
   providers: [SkillService, PaginationService, S3Service],
   controllers: [SkillController],
 })
