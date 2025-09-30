@@ -11,7 +11,6 @@ import { User } from '@/common/models/entities/user.entity'
 
 @Module({
   imports: [TypeOrmModule.forFeature([Skill, User, LearnerSkillLinker])],
-
   providers: [SkillService, PaginationService, S3Service],
   controllers: [SkillController],
 })
