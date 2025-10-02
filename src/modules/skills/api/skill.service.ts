@@ -25,6 +25,9 @@ import { LearnPath } from '@/common/models/entities/learn-path.entity'
 import { Course } from '@/common/models/entities/course.entity'
 import { LearnerLearnPath } from '@/common/models/entities/learner-learn-path-link.entity'
 import { LearnerCourseLinker } from '@/common/models/entities/learner-course-linker.entity'
+import { LogStatus } from '@/common/enum/logs-status.enum'
+import { createUserLogData } from '@/modules/user-log/helper/user-log.helper'
+import { UserLogService } from '@/modules/user-log/api/user-log.service'
 
 @Injectable()
 export class SkillService {
@@ -40,9 +43,10 @@ export class SkillService {
     private readonly paginationService: PaginationService,
     private readonly s3Service: S3Service,
     private readonly dataSource: DataSource,
+    private readonly userLogService: UserLogService,
   ) {}
 
-  async createSkill(payload: CreateSkillDto) {
+  async createSkill(payload: CreateSkillDto, user: User, ip: string) {
     try {
       const existingSkill = await this.skillRepository
         .createQueryBuilder('skill')
@@ -62,6 +66,11 @@ export class SkillService {
 
       const skillEntity = this.skillRepository.create({ ...payload })
       const skillSaved = await this.skillRepository.save(skillEntity)
+
+      const action = `${user.email} has created a skill with id: ${skillSaved.id}`
+      this.userLogService.saveUserLog(
+        createUserLogData(skillSaved.id, action, LogStatus.SUCCESS, ip),
+      )
 
       return getCreateSuccessMessage({
         entityName: 'skill',
@@ -267,12 +276,17 @@ export class SkillService {
     }
   }
 
-  async deleteSkill(id: number) {
+  async deleteSkill(id: number, user: User, ip: string) {
     console.log(id)
     const skillFound = await this.skillRepository.findOneOrFail({
       where: { id },
     })
     await this.skillRepository.softRemove(skillFound)
+
+    const action = `${user.email} has deleted a skill with id: ${skillFound.id}`
+    this.userLogService.saveUserLog(
+      createUserLogData(skillFound.id, action, LogStatus.SUCCESS, ip),
+    )
 
     return getDeleteSuccessMessage({
       entityName: 'skill',
@@ -280,7 +294,11 @@ export class SkillService {
     })
   }
 
-  async assignSkillToLearner(user: User, payload: AssignSkillToLearner) {
+  async assignSkillToLearner(
+    user: User,
+    payload: AssignSkillToLearner,
+    ip: string,
+  ) {
     const queryRunner = this.dataSource.createQueryRunner()
     await queryRunner.connect()
     await queryRunner.startTransaction()
@@ -374,6 +392,11 @@ export class SkillService {
         ...courseEntities,
       ])
 
+      const action = `Skill with id: ${skillFound.id} has been assigned to learner with id: ${userFound.learnerId}`
+      this.userLogService.saveUserLog(
+        createUserLogData(skillFound.id, action, LogStatus.SUCCESS, ip),
+      )
+
       await queryRunner.commitTransaction()
       return {
         status: 201,
@@ -390,7 +413,12 @@ export class SkillService {
     }
   }
 
-  async updateLearnerSkill(id: number, payload: AssignSkillToLearner) {
+  async updateLearnerSkill(
+    id: number,
+    payload: AssignSkillToLearner,
+    user: User,
+    ip: string,
+  ) {
     const queryRunner = this.dataSource.createQueryRunner()
     await queryRunner.connect()
     await queryRunner.startTransaction()
@@ -522,12 +550,17 @@ export class SkillService {
         ...courseEntities,
       ])
 
+      const action = `Skill with id: ${skillFound.id} has been updated for learner with id: ${learnerId}`
+      this.userLogService.saveUserLog(
+        createUserLogData(skillFound.id, action, LogStatus.SUCCESS, ip),
+      )
+
       await queryRunner.commitTransaction()
       return {
         status: 200,
         message: {
-          en: `Skill ${skillFound.id} and related entities updated for learner ${learnerId}`,
-          ar: `تم تحديث المهارة ${skillFound.id} والكيانات المرتبطة للمتعلّم ${learnerId}`,
+          en: `admin with id: ${user.id} has updated skill with id: ${skillFound.id} and related entities updated for learner with id: ${learnerId}`,
+          ar: `تم تحديث المهارة بالمعرّف: ${skillFound.id} والكيانات المرتبطة للمتعلّم بالمعرّف: ${learnerId}`,
         },
       }
     } catch (error) {
