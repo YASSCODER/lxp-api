@@ -5,10 +5,12 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { Badge } from '@/common/models/entities/badge.entity'
 import { BadgeLearnerLink } from '@/common/models/entities/badge-learner-link.entity'
 import { Learner } from '@/common/models/entities/learner.entity'
+import { UserLogService } from '../user-log/api/user-log.service'
+import { PaginationService } from '@/common/pagination/pagination.service'
 
 @Module({
   imports: [TypeOrmModule.forFeature([Badge, BadgeLearnerLink, Learner])],
-  providers: [BadgeService],
+  providers: [BadgeService, UserLogService, PaginationService, UserLogService],
   controllers: [BadgeController],
 })
 export class BadgeModule {}
