@@ -15,6 +15,9 @@ import { UserRole } from '@/common/enum/user-role.enum'
 import { NameEmbedded } from '@/common/models/embedded/name.entity'
 import { InstructorSkillLinker } from '../../common/models/entities/instructor-skill-linker.entity'
 import { getCreateSuccessMessage } from '@/common/utils/success-messages.utils'
+import { createUserLogData } from '@/modules/user-log/helper/user-log.helper'
+import { UserLogService } from '@/modules/user-log/api/user-log.service'
+import { LogStatus } from '@/common/enum/logs-status.enum'
 
 @Injectable()
 export class AuthService {
@@ -29,11 +32,12 @@ export class AuthService {
     private readonly roleRepository: Repository<Role>,
     @InjectRepository(InstructorSkillLinker)
     private readonly instructorSkillLinkerRepository: Repository<InstructorSkillLinker>,
+    private readonly userLogService: UserLogService,
     private readonly jwtService: JwtService,
   ) {}
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async validateUser(credentials: SignInDto): Promise<any> {
+  async validateUser(credentials: SignInDto, ip?: string): Promise<any> {
     const user = await this.userRepository.findOne({
       where: {
         email: ILike(credentials.email),
@@ -43,19 +47,40 @@ export class AuthService {
       },
     })
 
-    if (!user)
+    if (!user) {
+      if (ip) {
+        this.userLogService.saveUserLog(
+          createUserLogData(
+            0,
+            `Failed login attempt - Account does not exist for email: ${credentials.email}`,
+            LogStatus.FAILED,
+            ip,
+          ),
+        )
+      }
       throwAuthorizationValidationError({
         message: {
           en: 'Account does not exist',
           ar: 'الحساب غير موجود',
         },
       })
+    }
 
     const isCorrectPassword = await bcrypt.compare(
       credentials.password,
       user.password,
     )
     if (!isCorrectPassword) {
+      if (ip) {
+        this.userLogService.saveUserLog(
+          createUserLogData(
+            user.id,
+            `Failed login attempt - Invalid password for user: ${user.email}`,
+            LogStatus.FAILED,
+            ip,
+          ),
+        )
+      }
       throwAuthorizationValidationError({
         message: {
           en: 'Invalid password',
@@ -69,23 +94,38 @@ export class AuthService {
     return null
   }
 
-  public async login(user: User) {
-    const role = user.role.title.en
-    const payload = { id: user.id, role: role }
-    const userPayload = {
-      userId: user.id,
-      fullName: user.fullName,
-      email: user.email,
-      learnerId: user.learnerId,
-      instructorId: user.instructorId,
-    }
+  public async login(user: User, ip: string) {
+    try {
+      const role = user.role.title.en
+      const payload = { id: user.id, role: role }
+      const userPayload = {
+        userId: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        learnerId: user.learnerId,
+        instructorId: user.instructorId,
+      }
 
-    return {
-      token: this.jwtService.sign(payload),
-      user: {
-        role,
-        ...userPayload,
-      },
+      const action = `User ${user.email} logged in from ${ip}`
+
+      this.userLogService.saveUserLog(
+        createUserLogData(user.id, action, LogStatus.SUCCESS, ip),
+      )
+
+      return {
+        token: this.jwtService.sign(payload),
+        user: {
+          role,
+          ...userPayload,
+        },
+      }
+    } catch (error) {
+      console.error('Error logging in:', error)
+      const action = `User ${user.email} failed to login from ${ip}`
+      this.userLogService.saveUserLog(
+        createUserLogData(user.id, action, LogStatus.FAILED, ip),
+      )
+      throw error
     }
   }
 

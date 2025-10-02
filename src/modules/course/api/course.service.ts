@@ -11,6 +11,9 @@ import { User } from '@/common/models/entities/user.entity'
 import { LearnerCourseLinker } from '@/common/models/entities/learner-course-linker.entity'
 import { LearnPath } from '@/common/models/entities/learn-path.entity'
 import { LearnerLearnPath } from '@/common/models/entities/learner-learn-path-link.entity'
+import { createUserLogData } from '@/modules/user-log/helper/user-log.helper'
+import { LogStatus } from '@/common/enum/logs-status.enum'
+import { UserLogService } from '@/modules/user-log/api/user-log.service'
 
 @Injectable()
 export class CourseService {
@@ -25,9 +28,10 @@ export class CourseService {
     private readonly learnPathRepository: Repository<LearnPath>,
     @InjectRepository(LearnerLearnPath)
     private readonly learnerLearnPathLinkRepository: Repository<LearnerLearnPath>,
+    private readonly userLogService: UserLogService,
   ) {}
 
-  async createCourse(payload: CreateCourseDto) {
+  async createCourse(payload: CreateCourseDto, user: User, ip: string) {
     const exist = await this.courseRepository
       .createQueryBuilder('course')
       .where("course.title->>'en' = :en", { en: payload.title.en })
@@ -49,6 +53,11 @@ export class CourseService {
     const courseEntity = this.courseRepository.create({ ...payload })
 
     const courseSaved = await this.courseRepository.save(courseEntity)
+
+    const action = `${user.email} has created a course with id: ${courseSaved.id}`
+    this.userLogService.saveUserLog(
+      createUserLogData(courseSaved.id, action, LogStatus.SUCCESS, ip),
+    )
 
     return getCreateSuccessMessage({
       entityName: 'Course',
@@ -81,7 +90,7 @@ export class CourseService {
         learnPath: true,
       },
     })
-    
+
     const learnPathFound = await this.learnPathRepository.findOne({
       where: { id: courseFound.learnPathId },
       relations: {

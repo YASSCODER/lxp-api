@@ -6,10 +6,12 @@ import {
   Controller,
   Delete,
   Get,
+  Ip,
   Param,
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common'
 import { LearningUnitService } from './learning-unit.service'
@@ -17,6 +19,7 @@ import { Roles } from '@/auth/decorators/roles.decorator'
 import { CreateModuleDto } from '../dto/craete-module.dto'
 import { UpdateModuleDto } from '../dto/update-module.dto'
 import { FetchModuleAsListItemDto } from '../dto/fetch-module.dto'
+import { User } from '@/common/models/entities/user.entity'
 
 @Controller('module')
 export class LearningUnitController {
@@ -25,8 +28,12 @@ export class LearningUnitController {
   @Post('')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async createModule(@Body() payload: CreateModuleDto) {
-    return await this.moduleService.createModule(payload)
+  async createModule(
+    @Body() payload: CreateModuleDto,
+    @Req() req: { user: User },
+    @Ip() ip: string,
+  ) {
+    return await this.moduleService.createModule(payload, req.user, ip)
   }
 
   @Patch(':moduleId')
@@ -35,15 +42,26 @@ export class LearningUnitController {
   async updateModule(
     @Param('moduleId') moduleId: number,
     @Body() payload: UpdateModuleDto,
+    @Req() req: { user: User },
+    @Ip() ip: string,
   ) {
-    return await this.moduleService.updateModule(moduleId, payload)
+    return await this.moduleService.updateModule(
+      moduleId,
+      payload,
+      req.user,
+      ip,
+    )
   }
 
   @Delete(':moduleId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async deleteModule(@Param('moduleId') moduleId: number) {
-    return await this.moduleService.deleteModule(moduleId)
+  async deleteModule(
+    @Param('moduleId') moduleId: number,
+    @Req() req: { user: User },
+    @Ip() ip: string,
+  ) {
+    return await this.moduleService.deleteModule(moduleId, req.user, ip)
   }
 
   @Get('list')

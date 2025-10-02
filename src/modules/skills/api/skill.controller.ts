@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Ip,
   Param,
   Patch,
   Post,
@@ -27,8 +28,12 @@ export class SkillController {
   @Post('')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async createSkill(@Body() payload: CreateSkillDto) {
-    return await this.skillService.createSkill(payload)
+  async createSkill(
+    @Body() payload: CreateSkillDto,
+    @Req() req: { user: User },
+    @Ip() ip: string,
+  ) {
+    return await this.skillService.createSkill(payload, req.user, ip)
   }
 
   @Get('paginate')
@@ -72,8 +77,12 @@ export class SkillController {
   @Delete(':skillId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async deleteSkill(@Param('skillId') skillId: number) {
-    return await this.skillService.deleteSkill(skillId)
+  async deleteSkill(
+    @Param('skillId') skillId: number,
+    @Req() req: { user: User },
+    @Ip() ip: string,
+  ) {
+    return await this.skillService.deleteSkill(skillId, req.user, ip)
   }
 
   @Post('assign-learner')
@@ -82,8 +91,9 @@ export class SkillController {
   async assignSkillToLearner(
     @Req() req: { user: User },
     @Body() payload: AssignSkillToLearner,
+    @Ip() ip: string,
   ) {
-    return await this.skillService.assignSkillToLearner(req.user, payload)
+    return await this.skillService.assignSkillToLearner(req.user, payload, ip)
   }
 
   @Patch('update-learner-skill/:learnerId')
@@ -92,8 +102,10 @@ export class SkillController {
   async updateLearnerSkill(
     @Param('learnerId') id: number,
     @Body() payload: AssignSkillToLearner,
+    @Req() req: { user: User },
+    @Ip() ip: string,
   ) {
-    return await this.skillService.updateLearnerSkill(id, payload)
+    return await this.skillService.updateLearnerSkill(id, payload, req.user, ip)
   }
 
   @Get('total-count')

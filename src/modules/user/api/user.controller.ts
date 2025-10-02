@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Ip,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common'
 import { UserService } from './user.service'
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard'
 import { RolesGuard } from '@/auth/guards/roles.guard'
@@ -7,6 +16,7 @@ import { Roles } from '@/auth/decorators/roles.decorator'
 import { UserRole } from '@/common/enum/user-role.enum'
 import { CreateUserDto } from '../dto/create-user.dto'
 import { FetchUserDto } from '../dto/fetch-user.dto'
+import { User } from '@/common/models/entities/user.entity'
 
 @Controller('user')
 export class UserController {
@@ -15,8 +25,12 @@ export class UserController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async createAdminUser(@Body() payload: CreateUserDto) {
-    return await this.userService.createAdminUser(payload)
+  async createAdminUser(
+    @Body() payload: CreateUserDto,
+    @Req() req: { user: User },
+    @Ip() ip: string,
+  ) {
+    return await this.userService.createAdminUser(payload, req.user, ip)
   }
 
   @Get('total-user')
