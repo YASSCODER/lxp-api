@@ -17,6 +17,10 @@ import {
 import { paginationParamsFormula } from '@/common/utils/pagination-formula.utils'
 import { applyLearnPathFilter } from '../helper/learn-path.helper'
 import { S3Service } from '@/common/aws/service/s3.service'
+import { User } from '@/common/models/entities/user.entity'
+import { createUserLogData } from '@/modules/user-log/helper/user-log.helper'
+import { LogStatus } from '@/common/enum/logs-status.enum'
+import { UserLogService } from '@/modules/user-log/api/user-log.service'
 
 @Injectable()
 export class LearnPathService {
@@ -25,9 +29,10 @@ export class LearnPathService {
     private readonly learnPathRepository: Repository<LearnPath>,
     private readonly paginationService: PaginationService,
     private readonly s3Service: S3Service,
+    private readonly userLogService: UserLogService,
   ) {}
 
-  async createLearnPath(payload: CreateLearnPathDto) {
+  async createLearnPath(payload: CreateLearnPathDto, user: User, ip: string) {
     const exists = await this.learnPathRepository
       .createQueryBuilder('lp')
       .where("lp.title->>'en' = :en", { en: payload.title.en })
@@ -49,6 +54,11 @@ export class LearnPathService {
     const learnPathEntity = this.learnPathRepository.create({ ...payload })
 
     const LearnPath = await this.learnPathRepository.save(learnPathEntity)
+
+    const action = `${user.email} has created a learn path with id: ${LearnPath.id}`
+    this.userLogService.saveUserLog(
+      createUserLogData(LearnPath.id, action, LogStatus.SUCCESS, ip),
+    )
 
     return getCreateSuccessMessage({
       entityName: 'LearnPath',

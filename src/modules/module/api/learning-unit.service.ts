@@ -11,17 +11,27 @@ import {
 import { UpdateModuleDto } from '../dto/update-module.dto'
 import { FetchModuleAsListItemDto } from '../dto/fetch-module.dto'
 import { applyModuleFilter } from '../helper/module-filter.helper'
+import { User } from '@/common/models/entities/user.entity'
+import { LogStatus } from '@/common/enum/logs-status.enum'
+import { createUserLogData } from '@/modules/user-log/helper/user-log.helper'
+import { UserLogService } from '@/modules/user-log/api/user-log.service'
 
 @Injectable()
 export class LearningUnitService {
   constructor(
     @InjectRepository(LearningUnit)
     private readonly moduleRepository: Repository<LearningUnit>,
+    private readonly userLogService: UserLogService,
   ) {}
 
-  async createModule(payload: CreateModuleDto) {
+  async createModule(payload: CreateModuleDto, user: User, ip: string) {
     const moduleEntity = this.moduleRepository.create({ ...payload })
     const savedModule = await this.moduleRepository.save(moduleEntity)
+
+    const action = `${user.email} has created a module with id: ${savedModule.id}`
+    this.userLogService.saveUserLog(
+      createUserLogData(savedModule.id, action, LogStatus.SUCCESS, ip),
+    )
 
     return getCreateSuccessMessage({
       entityName: 'module',
@@ -29,8 +39,18 @@ export class LearningUnitService {
     })
   }
 
-  async updateModule(id: number, payload: UpdateModuleDto) {
+  async updateModule(
+    id: number,
+    payload: UpdateModuleDto,
+    user: User,
+    ip: string,
+  ) {
     await this.moduleRepository.update(id, payload)
+
+    const action = `${user.email} has updated a module with id: ${id}`
+    this.userLogService.saveUserLog(
+      createUserLogData(id, action, LogStatus.SUCCESS, ip),
+    )
 
     return getUpdateSuccessMessage({
       entityName: 'module',
@@ -38,8 +58,13 @@ export class LearningUnitService {
     })
   }
 
-  async deleteModule(id: number) {
+  async deleteModule(id: number, user: User, ip: string) {
     await this.moduleRepository.delete(id)
+
+    const action = `${user.email} has deleted a module with id: ${id}`
+    this.userLogService.saveUserLog(
+      createUserLogData(id, action, LogStatus.SUCCESS, ip),
+    )
 
     return getDeleteSuccessMessage({
       entityName: 'module',

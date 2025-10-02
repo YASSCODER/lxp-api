@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  Ip,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common'
 import { LearnPathService } from './learn-path.service'
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard'
 import { RolesGuard } from '@/auth/guards/roles.guard'
@@ -9,6 +18,7 @@ import {
   FetchLearnPathAsItem,
   FetchLearnPathDto,
 } from '../dto/fetch-learning-path.dto'
+import { User } from '@/common/models/entities/user.entity'
 
 @Controller('learn-path')
 export class LearnPathController {
@@ -17,8 +27,12 @@ export class LearnPathController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async createLearnPath(@Body() payload: CreateLearnPathDto) {
-    return await this.learnPathService.createLearnPath(payload)
+  async createLearnPath(
+    @Body() payload: CreateLearnPathDto,
+    @Req() req: { user: User },
+    @Ip() ip: string,
+  ) {
+    return await this.learnPathService.createLearnPath(payload, req.user, ip)
   }
 
   @Get('list-all')
