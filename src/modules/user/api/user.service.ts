@@ -14,6 +14,9 @@ import {
   PaginationService,
 } from '@/common/pagination/pagination.service'
 import * as bcrypt from 'bcryptjs'
+import { createUserLogData } from '@/modules/user-log/helper/user-log.helper'
+import { LogStatus } from '@/common/enum/logs-status.enum'
+import { UserLogService } from '@/modules/user-log/api/user-log.service'
 
 export class UserService {
   constructor(
@@ -21,11 +24,17 @@ export class UserService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
-
+    private readonly userLogService: UserLogService,
     private readonly paginationService: PaginationService,
   ) {}
 
-  async createAdminUser(payload: CreateUserDto) {
+  async createAdminUser(payload: CreateUserDto, user: User, ip: string) {
+    const userFound = await this.userRepository.findOne({
+      where: {
+        id: user.id,
+      },
+    })
+
     const roleFound = await this.roleRepository
       .createQueryBuilder('role')
       .where("role.title->>'en' = :name", { name: UserRole.ADMIN })
@@ -63,6 +72,11 @@ export class UserService {
     })
 
     const savedAdmin = await this.userRepository.save(adminEntity)
+
+    const action = `${userFound.email} has created an admin with id: ${savedAdmin.id}`
+    this.userLogService.saveUserLog(
+      createUserLogData(savedAdmin.id, action, LogStatus.SUCCESS, ip),
+    )
 
     return {
       status: HttpStatus.CREATED,

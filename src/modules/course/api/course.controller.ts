@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Ip,
   Param,
   Patch,
   Post,
@@ -23,8 +24,12 @@ export class CourseController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async createCourse(@Body() payload: CreateCourseDto) {
-    return this.courseService.createCourse(payload)
+  async createCourse(
+    @Body() payload: CreateCourseDto,
+    @Req() req: { user: User },
+    @Ip() ip: string,
+  ) {
+    return this.courseService.createCourse(payload, req.user, ip)
   }
 
   @Patch('completed/:courseId')
@@ -33,13 +38,14 @@ export class CourseController {
   async markAsCompleted(
     @Param('courseId') courseId: number,
     @Req() req: { user: User },
+    @Ip() ip: string,
   ) {
     return await this.courseService.markAsCompleted(courseId, req.user)
   }
   @Get('total-count')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async getTotalCourse(){
+  async getTotalCourse() {
     return await this.courseService.getTotalCount()
   }
 }
