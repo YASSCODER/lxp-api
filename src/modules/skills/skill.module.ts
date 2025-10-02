@@ -8,10 +8,11 @@ import { S3Service } from '@/common/aws/service/s3.service'
 import { LearnerSkillLinker } from '@/common/models/entities/learner-skill-linker.entity'
 
 import { User } from '@/common/models/entities/user.entity'
+import { UserLogService } from '../user-log/api/user-log.service'
 
 @Module({
   imports: [TypeOrmModule.forFeature([Skill, User, LearnerSkillLinker])],
-  providers: [SkillService, PaginationService, S3Service],
+  providers: [SkillService, PaginationService, S3Service, UserLogService],
   controllers: [SkillController],
 })
 export class SkillModule {}

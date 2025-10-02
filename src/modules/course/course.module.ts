@@ -8,6 +8,7 @@ import { User } from '@/common/models/entities/user.entity'
 import { LearnerCourseLinker } from '@/common/models/entities/learner-course-linker.entity'
 import { LearnerLearnPath } from '@/common/models/entities/learner-learn-path-link.entity'
 import { LearnPath } from '@/common/models/entities/learn-path.entity'
+import { UserLogService } from '../user-log/api/user-log.service'
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { LearnPath } from '@/common/models/entities/learn-path.entity'
       LearnerLearnPath,
     ]),
   ],
-  providers: [CourseService, PaginationService],
+  providers: [CourseService, PaginationService, UserLogService],
   controllers: [CourseController],
   exports: [],
 })
