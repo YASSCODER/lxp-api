@@ -15,7 +15,6 @@ import { LocalAuthGuard } from './guards/local-auth.guard'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { RolesGuard } from './guards/roles.guard'
 import { InstructorSkillLinker } from '@/common/models/entities/instructor-skill-linker.entity'
-import { UserLogService } from '@/modules/user-log/api/user-log.service'
 import { AuthExceptionFilter } from './filters/auth-exception.filter'
 
 @Module({
@@ -47,7 +46,6 @@ import { AuthExceptionFilter } from './filters/auth-exception.filter'
     LocalAuthGuard,
     JwtAuthGuard,
     RolesGuard,
-    UserLogService,
     AuthExceptionFilter,
   ],
   exports: [AuthService, JwtAuthGuard, RolesGuard],
