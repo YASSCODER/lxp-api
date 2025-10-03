@@ -6,9 +6,10 @@ import { UserController } from './api/user.controller'
 import { Role } from '@/common/models/entities/role.entity'
 import { PaginationService } from '@/common/pagination/pagination.service'
 import { UserLogService } from '../user-log/api/user-log.service'
+import { UserLog } from '@/common/models/entities/user-log.entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Role])],
+  imports: [TypeOrmModule.forFeature([User, Role, UserLog])],
   providers: [UserService, PaginationService, UserLogService],
   controllers: [UserController],
 })
