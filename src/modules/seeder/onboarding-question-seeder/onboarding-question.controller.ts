@@ -10,12 +10,12 @@ export class OnboardingQuestionSeederController {
   @Post('seed')
   async seedOnboardingQuestions() {
     await this.onboardingQuestionSeederService.seedOnboardingQuestions()
-    const count =
-      await this.onboardingQuestionSeederService.getSeededQuestionsCount()
+    const counts =
+      await this.onboardingQuestionSeederService.getSeededDataCount()
 
     return {
-      message: 'Onboarding questions seeded successfully',
-      count,
+      message: 'Onboarding questions and answers seeded successfully',
+      counts,
     }
   }
 
@@ -24,18 +24,18 @@ export class OnboardingQuestionSeederController {
     await this.onboardingQuestionSeederService.clearOnboardingQuestions()
 
     return {
-      message: 'All onboarding questions cleared successfully',
+      message: 'All onboarding questions and answers cleared successfully',
     }
   }
 
   @Get('count')
   async getOnboardingQuestionsCount() {
-    const count =
-      await this.onboardingQuestionSeederService.getSeededQuestionsCount()
+    const counts =
+      await this.onboardingQuestionSeederService.getSeededDataCount()
 
     return {
-      message: 'Onboarding questions count retrieved',
-      count,
+      message: 'Onboarding questions and answers count retrieved',
+      counts,
     }
   }
 }
