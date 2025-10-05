@@ -16,6 +16,4 @@ export function createUserLogData(
   }
 }
 
-export function applyUserLogFilter() {
-  // Implementation for filtering user logs can be added here
-}
+export function applyUserLogFilter() {}
