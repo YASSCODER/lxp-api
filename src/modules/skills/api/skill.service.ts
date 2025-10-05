@@ -69,7 +69,7 @@ export class SkillService {
 
       const action = `${user.email} has created a skill with id: ${skillSaved.id}`
       this.userLogService.saveUserLog(
-        createUserLogData(skillSaved.id, action, LogStatus.SUCCESS, ip),
+        createUserLogData(user.id, action, LogStatus.SUCCESS, ip),
       )
 
       return getCreateSuccessMessage({
@@ -285,7 +285,7 @@ export class SkillService {
 
     const action = `${user.email} has deleted a skill with id: ${skillFound.id}`
     this.userLogService.saveUserLog(
-      createUserLogData(skillFound.id, action, LogStatus.SUCCESS, ip),
+      createUserLogData(user.id, action, LogStatus.SUCCESS, ip),
     )
 
     return getDeleteSuccessMessage({

@@ -1,6 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
 import { BaseModel } from '../types/base-model.entity'
 import { LogStatus } from '@/common/enum/logs-status.enum'
+import { User } from './user.entity'
 
 @Entity('user_log')
 export class UserLog extends BaseModel {
@@ -21,4 +28,8 @@ export class UserLog extends BaseModel {
 
   @Column({ type: 'varchar', nullable: false })
   ip: string
+
+  @ManyToOne(() => User, (user) => user.userLogs)
+  @JoinColumn({ name: 'userId' })
+  user: User
 }
