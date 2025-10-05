@@ -3,6 +3,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
@@ -11,6 +12,9 @@ import { Role } from './role.entity'
 import { Learner } from './learner.entity'
 import { Instructor } from './instructor.entity'
 import { FileEmbedded } from '../embedded/file.entity'
+import { UserLog } from './user-log.entity'
+import { OnboardingQuestion } from './onboarding-question.entity'
+import { UserAnswerOnboarding } from './user-answer-onboarding.entity'
 
 @Entity('user')
 export class User extends BaseModel {
@@ -55,4 +59,13 @@ export class User extends BaseModel {
   @OneToOne(() => Instructor, (instructor) => instructor.user)
   @JoinColumn({ name: 'instructorId' })
   instructor: Instructor
+
+  @OneToMany(() => UserLog, (userLog) => userLog.user)
+  userLogs: UserLog[]
+
+  @OneToMany(
+    () => UserAnswerOnboarding,
+    (userAnswerOnboarding) => userAnswerOnboarding.user,
+  )
+  userAnswerOnboardings: UserAnswerOnboarding[]
 }
