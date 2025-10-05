@@ -1,18 +1,9 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  OneToMany,
-} from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
 import { BaseModel } from '../types/base-model.entity'
 import { QuestionEnum } from '../../enum/question.enum'
-import { AnswerEnum } from '../../enum/answers.enum'
-import { User } from './user.entity'
-import { UserAnswerOnboarding } from './user-answer-onboarding.entity'
-import { AnswersOption } from '../embedded/answers-option.embedded'
 import { QuestionTextEmbedded } from '../embedded/question-text.embedded'
+import { OnboardingAnswer } from './onboarding-answer.entity'
+import { UserAnswerOnboarding } from './user-answer-onboarding.entity'
 
 @Entity('onboarding_question')
 export class OnboardingQuestion extends BaseModel {
@@ -27,23 +18,16 @@ export class OnboardingQuestion extends BaseModel {
   question: QuestionEnum
 
   @Column({
-    type: 'enum',
-    enum: AnswerEnum,
-    nullable: false,
-  })
-  answer: AnswerEnum
-
-  @Column({
     type: 'jsonb',
     nullable: false,
   })
   questionText: QuestionTextEmbedded
 
-  @Column({
-    type: 'jsonb',
-    nullable: false,
-  })
-  answerOptions: AnswersOption[]
+  @OneToMany(
+    () => OnboardingAnswer,
+    (onboardingAnswer) => onboardingAnswer.onboardingQuestion,
+  )
+  onboardingAnswers: OnboardingAnswer[]
 
   @OneToMany(
     () => UserAnswerOnboarding,

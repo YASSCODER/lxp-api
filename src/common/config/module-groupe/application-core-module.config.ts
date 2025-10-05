@@ -9,6 +9,7 @@ import { CourseModule } from '@/modules/course/course.module'
 import { UserModule } from '@/modules/user/user.module'
 import { LearnerModule } from '@/modules/learner/learner.module'
 import { InstructorModule } from '@/modules/instructor/instructor.module'
+import { OnboardingModule } from '@/modules/onboarding-question/onboarding.module'
 
 export const ApplicationCoreModule = [
   AuthModule,
@@ -22,4 +23,5 @@ export const ApplicationCoreModule = [
   LearnerModule,
   InstructorModule,
   AWSModule,
+  OnboardingModule,
 ]

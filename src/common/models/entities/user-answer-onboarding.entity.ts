@@ -7,6 +7,7 @@ import {
 } from 'typeorm'
 import { BaseModel } from '../types/base-model.entity'
 import { OnboardingQuestion } from './onboarding-question.entity'
+import { OnboardingAnswer } from './onboarding-answer.entity'
 import { User } from './user.entity'
 
 @Entity('user_answer_onboarding')
@@ -17,11 +18,11 @@ export class UserAnswerOnboarding extends BaseModel {
   @Column({ type: 'int', nullable: true })
   userId: number
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int', nullable: false })
   onboardingQuestionId: number
 
-  @Column({ type: 'varchar', nullable: true })
-  answer: string
+  @Column({ type: 'int', nullable: false })
+  onboardingAnswerId: number
 
   @ManyToOne(() => User, (user) => user.userAnswerOnboardings)
   @JoinColumn({ name: 'userId' })
@@ -33,4 +34,8 @@ export class UserAnswerOnboarding extends BaseModel {
   )
   @JoinColumn({ name: 'onboardingQuestionId' })
   onboardingQuestion: OnboardingQuestion
+
+  @ManyToOne(() => OnboardingAnswer)
+  @JoinColumn({ name: 'onboardingAnswerId' })
+  onboardingAnswer: OnboardingAnswer
 }
