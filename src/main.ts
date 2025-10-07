@@ -8,12 +8,16 @@ import { MAX_PARSE_LIMIT } from './common/config/constant/application.constant'
 import { GeneralExceptionFilter } from './common/validation/general-exception-filter'
 import { AppConfigService } from './common/config/app/config.service'
 import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe'
+import { IoAdapter } from '@nestjs/platform-socket.io'
 
 declare const module: any
 
 export async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   const appConfig: AppConfigService = app.get(AppConfigService)
+
+  app.useWebSocketAdapter(new IoAdapter(app))
+
   app.useGlobalPipes(new ValidationPipe())
   app.setGlobalPrefix('api')
   app.enableCors()

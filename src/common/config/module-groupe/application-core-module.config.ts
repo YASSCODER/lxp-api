@@ -10,6 +10,7 @@ import { UserModule } from '@/modules/user/user.module'
 import { LearnerModule } from '@/modules/learner/learner.module'
 import { InstructorModule } from '@/modules/instructor/instructor.module'
 import { OnboardingModule } from '@/modules/onboarding-question/onboarding.module'
+import { NotificationModule } from '@/common/notification/notification.module'
 
 export const ApplicationCoreModule = [
   AuthModule,
@@ -24,4 +25,5 @@ export const ApplicationCoreModule = [
   InstructorModule,
   AWSModule,
   OnboardingModule,
+  NotificationModule,
 ]
