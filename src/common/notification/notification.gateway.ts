@@ -17,6 +17,7 @@ import { NotificationContentData } from './types/notification-data.interface'
 
 interface NotificationPayload {
   type: string
+  title: NotificationContentData
   content: NotificationContentData
   link: string
   createdAt: Date

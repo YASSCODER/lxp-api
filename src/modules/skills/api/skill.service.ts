@@ -79,11 +79,13 @@ export class SkillService {
       const notification: NotificationPayload = {
         type: 'NEW_SKILL_CREATED',
         userId: user.id,
+        title: {
+          en: 'New Skill Available',
+          ar: 'مهارة جديدة متاحة',
+        },
         content: {
-          content: {
-            en: `New skill available: ${skillSaved.title.en}!`,
-            ar: `مهارة جديدة متاحة: ${skillSaved.title.ar}!`,
-          },
+          en: `${skillSaved.title.en} has been added to the system`,
+          ar: `تمت إضافة ${skillSaved.title.ar} إلى النظام`,
         },
         link: `/skills/${skillSaved.id}`,
         createdAt: new Date(),

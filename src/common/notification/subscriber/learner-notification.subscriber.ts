@@ -27,9 +27,10 @@ export class LearnerNotificationSubscriber {
     )
 
     try {
-      const content: NotificationContentEmbedded = {
-        en: event.notification.content.content.en,
-        ar: event.notification.content.content.ar,
+      // Extract content for database storage (combined title + content)
+      const dbContent: NotificationContentEmbedded = {
+        en: `${event.notification.title.en}: ${event.notification.content.en}`,
+        ar: `${event.notification.title.ar}: ${event.notification.content.ar}`,
       }
 
       const learners = await this.learnerRepository.find({
@@ -41,16 +42,26 @@ export class LearnerNotificationSubscriber {
       for (const learner of learners) {
         if (learner.user) {
           try {
+            // Save to database
             await this.notificationService.createNotification(
               learner.user.id,
-              content,
+              dbContent,
               event.notification.link,
               event.notification.type,
             )
 
+            // Send WebSocket notification with title and content separately
+            const wsPayload = {
+              type: event.notification.type,
+              title: event.notification.title,
+              content: event.notification.content,
+              link: event.notification.link,
+              createdAt: event.notification.createdAt,
+            }
+
             await this.notificationService.sendNotificationToUser(
               learner.user.id,
-              event.notification,
+              wsPayload,
             )
 
             this.logger.log(
@@ -81,9 +92,16 @@ export class LearnerNotificationSubscriber {
     )
 
     try {
-      await this.notificationService.sendNotificationToAllLearners(
-        event.notification,
-      )
+      // Broadcast with title and content separately
+      const wsPayload = {
+        type: event.notification.type,
+        title: event.notification.title,
+        content: event.notification.content,
+        link: event.notification.link,
+        createdAt: event.notification.createdAt,
+      }
+
+      await this.notificationService.sendNotificationToAllLearners(wsPayload)
 
       this.logger.log(
         `Broadcast notification sent to all learners: ${event.notification.type}`,
