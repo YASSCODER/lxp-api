@@ -46,3 +46,4 @@ dist
 .nvmrc
 .vscode
 cleaning-db.sh
+public
