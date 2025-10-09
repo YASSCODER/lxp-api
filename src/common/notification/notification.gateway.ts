@@ -24,7 +24,13 @@ interface NotificationPayload {
 }
 
 @WebSocketGateway({
-  cors: { origin: '*' },
+  cors: {
+    origin: process.env.APP_URL || 'http://localhost:8000',
+    credentials: true,
+  },
+  transports: ['websocket', 'polling'],
+  pingTimeout: 60000,
+  pingInterval: 60000,
 })
 @Injectable()
 export class NotificationsGateway
@@ -43,13 +49,13 @@ export class NotificationsGateway
   ) {}
 
   async afterInit(_server: Server) {
-    const port = this.configService.get('PORT') || 8000
-    const host = this.configService.get('HOST') || 'localhost'
-    const wsUrl = `http://${host}:${port}`
-
-    this.logger.log(`NotificationsGateway initialized`)
-    this.logger.log(`🔌 WebSocket Server URL: ${wsUrl}`)
-    this.logger.log(`📡 Clients can connect using Socket.IO at: ${wsUrl}`)
+    const appUrl = this.configService.get('APP_URL') || 'http://localhost:8000'
+    const wsUrl = appUrl
+      .replace('http://', 'ws://')
+      .replace('https://', 'wss://')
+    this.logger.log(`--> NotificationsGateway initialized`)
+    this.logger.log(`--> WebSocket URL: ${wsUrl}`)
+    this.logger.log(`--> CORS origin: ${appUrl}`)
   }
 
   async handleConnection(client: Socket) {

@@ -20,6 +20,13 @@ export class LearnerNotificationSubscriber {
     private readonly learnerRepository: Repository<Learner>,
   ) {}
 
+  /**
+   *
+   * @param event NotificationEvent
+   * @description Handles the notification.learner.push event
+   * @description Creates a notification in the database
+   * @description Sends a notification to all learners
+   */
   @OnEvent('notification.learner.push')
   async handleLearnerNotificationPush(event: NotificationEvent) {
     this.logger.log(
@@ -27,7 +34,6 @@ export class LearnerNotificationSubscriber {
     )
 
     try {
-      // Extract content for database storage (combined title + content)
       const dbContent: NotificationContentEmbedded = {
         en: `${event.notification.title.en}: ${event.notification.content.en}`,
         ar: `${event.notification.title.ar}: ${event.notification.content.ar}`,
@@ -42,7 +48,6 @@ export class LearnerNotificationSubscriber {
       for (const learner of learners) {
         if (learner.user) {
           try {
-            // Save to database
             await this.notificationService.createNotification(
               learner.user.id,
               dbContent,
@@ -50,7 +55,6 @@ export class LearnerNotificationSubscriber {
               event.notification.type,
             )
 
-            // Send WebSocket notification with title and content separately
             const wsPayload = {
               type: event.notification.type,
               title: event.notification.title,
@@ -85,6 +89,12 @@ export class LearnerNotificationSubscriber {
     }
   }
 
+  /**
+   *
+   * @param event NotificationEvent
+   * @description Handles the notification.learner.broadcast event
+   * @description Sends a notification to all learners
+   */
   @OnEvent('notification.learner.broadcast')
   async handleLearnerBroadcast(event: NotificationEvent) {
     this.logger.log(
@@ -92,7 +102,6 @@ export class LearnerNotificationSubscriber {
     )
 
     try {
-      // Broadcast with title and content separately
       const wsPayload = {
         type: event.notification.type,
         title: event.notification.title,

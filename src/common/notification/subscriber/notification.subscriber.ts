@@ -10,6 +10,13 @@ export class NotificationSubscriber {
 
   constructor(private readonly notificationService: NotificationService) {}
 
+  /**
+   *
+   * @param event NotificationEvent
+   * @description Handles the notification.created event
+   * @description Creates a notification in the database
+   * @description Sends a notification to the user
+   */
   @OnEvent('notification.created')
   async handleNotificationCreated(event: NotificationEvent) {
     this.logger.log(
@@ -18,8 +25,8 @@ export class NotificationSubscriber {
 
     try {
       const content: NotificationContentEmbedded = {
-        en: event.notification.content.content.en,
-        ar: event.notification.content.content.ar,
+        en: event.notification.content.en,
+        ar: event.notification.content.ar,
       }
 
       await this.notificationService.createNotification(

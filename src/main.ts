@@ -9,13 +9,14 @@ import { GeneralExceptionFilter } from './common/validation/general-exception-fi
 import { AppConfigService } from './common/config/app/config.service'
 import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe'
 import { IoAdapter } from '@nestjs/platform-socket.io'
+import { Logger } from '@nestjs/common'
 
 declare const module: any
 
 export async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   const appConfig: AppConfigService = app.get(AppConfigService)
-
+  const logger = new Logger('Bootstrap')
   app.useWebSocketAdapter(new IoAdapter(app))
 
   app.useGlobalPipes(new ValidationPipe())
@@ -36,7 +37,11 @@ export async function bootstrap() {
   const host = (appConfig as any).host ?? '0.0.0.0'
 
   await app.listen(port, host)
-  console.log(`🚀`)
+  const appUrl = process.env.APP_URL || 'http://localhost:8000'
+  const wsUrl = appUrl.replace('http://', 'ws://').replace('https://', 'wss://')
+
+  logger.log(`🚀 Application is running on: ${appUrl}`)
+  logger.log(`📡 WebSocket server available at: ${wsUrl}`)
 
   if (module?.hot) {
     module.hot.accept()

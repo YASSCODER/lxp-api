@@ -87,7 +87,7 @@ export class SkillService {
           en: `${skillSaved.title.en} has been added to the system`,
           ar: `تمت إضافة ${skillSaved.title.ar} إلى النظام`,
         },
-        link: `/skills/${skillSaved.id}`,
+        link: `${process.env.FRONTEND_URL}/skills/${skillSaved.id}`,
         createdAt: new Date(),
       }
 
