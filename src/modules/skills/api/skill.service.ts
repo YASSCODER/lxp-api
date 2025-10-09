@@ -91,7 +91,6 @@ export class SkillService {
         createdAt: new Date(),
       }
 
-      // Emit event to send notifications to all learners (save to DB + WebSocket)
       this.eventEmitter.emit(
         'notification.learner.push',
         new NotificationEvent(notification),
