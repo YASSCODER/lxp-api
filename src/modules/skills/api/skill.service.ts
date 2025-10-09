@@ -28,6 +28,9 @@ import { LearnerCourseLinker } from '@/common/models/entities/learner-course-lin
 import { LogStatus } from '@/common/enum/logs-status.enum'
 import { createUserLogData } from '@/modules/user-log/helper/user-log.helper'
 import { UserLogService } from '@/modules/user-log/api/user-log.service'
+import { EventEmitter2 } from '@nestjs/event-emitter'
+import { NotificationEvent } from '@/common/notification/event/notification.event'
+import { NotificationPayload } from '@/common/notification/types/notification-data.interface'
 
 @Injectable()
 export class SkillService {
@@ -36,6 +39,7 @@ export class SkillService {
     private readonly skillRepository: Repository<Skill>,
     @InjectRepository(LearnerSkillLinker)
     private readonly learnerSkillLinkerRepository: Repository<LearnerSkillLinker>,
+    private readonly eventEmitter: EventEmitter2,
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -70,6 +74,27 @@ export class SkillService {
       const action = `${user.email} has created a skill with id: ${skillSaved.id}`
       this.userLogService.saveUserLog(
         createUserLogData(user.id, action, LogStatus.SUCCESS, ip),
+      )
+
+      const notification: NotificationPayload = {
+        type: 'NEW_SKILL_CREATED',
+        userId: user.id,
+        title: {
+          en: 'New Skill Available',
+          ar: 'مهارة جديدة متاحة',
+        },
+        content: {
+          en: `${skillSaved.title.en} has been added to the system`,
+          ar: `تمت إضافة ${skillSaved.title.ar} إلى النظام`,
+        },
+        link: `${process.env.FRONTEND_URL}/skills/${skillSaved.id}`,
+        createdAt: new Date(),
+      }
+
+      // Emit event to send notifications to all learners (save to DB + WebSocket)
+      this.eventEmitter.emit(
+        'notification.learner.push',
+        new NotificationEvent(notification),
       )
 
       return getCreateSuccessMessage({
