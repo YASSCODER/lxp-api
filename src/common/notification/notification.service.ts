@@ -5,6 +5,13 @@ import { Notification } from '../models/entities/notification.entity'
 import { NotificationContentEmbedded } from '../models/embedded/notification-content.embedded'
 import { NotificationPayload } from './types/notification-data.interface'
 import { NotificationsGateway } from './notification.gateway'
+import { paginationParamsFormula } from '../utils/pagination-formula.utils'
+import { User } from '../models/entities/user.entity'
+import { PaginationDto } from '../dto/pagination.dto'
+import {
+  PaginationResult,
+  PaginationService,
+} from '../pagination/pagination.service'
 
 @Injectable()
 export class NotificationService {
@@ -14,6 +21,7 @@ export class NotificationService {
     @InjectRepository(Notification)
     private readonly notificationRepository: Repository<Notification>,
     private readonly notificationsGateway: NotificationsGateway,
+    private readonly paginationService: PaginationService,
   ) {}
 
   async createNotification(
@@ -82,20 +90,31 @@ export class NotificationService {
   /**
    * Get notifications for a specific user
    */
-  async getUserNotifications(userId: number, limit = 20, offset = 0) {
+  async getUserNotifications(
+    user: User,
+    query: PaginationDto,
+  ): Promise<PaginationResult<Notification>> {
+    const paginationFormula = paginationParamsFormula(query)
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
     try {
-      const [notifications, total] =
-        await this.notificationRepository.findAndCount({
-          where: { userId },
-          order: { createdAtTimestamp: 'DESC' },
-          take: limit,
-          skip: offset,
+      const qb = this.notificationRepository
+        .createQueryBuilder('notification')
+        .where('notification.userId = :userId', { userId: user.id })
+        .andWhere('notification.createdAtTimestamp >= :threeDaysAgo', {
+          threeDaysAgo,
         })
+        .orderBy('notification.createdAtTimestamp', 'DESC')
 
-      return { notifications, total }
+      const { data, pagination } =
+        await this.paginationService.paginateWithQueryBuilder(
+          qb,
+          paginationFormula,
+        )
+
+      return { data, pagination }
     } catch (error) {
       this.logger.error(
-        `Failed to get notifications for user ${userId}: ${error.message}`,
+        `Failed to get notifications for user ${user.id}: ${error.message}`,
       )
       throw error
     }

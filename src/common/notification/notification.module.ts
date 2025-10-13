@@ -8,16 +8,18 @@ import { Notification } from '../models/entities/notification.entity'
 import { Learner } from '../models/entities/learner.entity'
 import { NotificationSubscriber } from './subscriber/notification.subscriber'
 import { LearnerNotificationSubscriber } from './subscriber/learner-notification.subscriber'
-import { NotificationExampleController } from './notification-example.controller'
 import { JwtModule } from '@nestjs/jwt'
+import { PaginationModule } from '../pagination/pagination.module'
+import { NotificationController } from './notification.controller'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Notification, Learner]),
     ConfigModule,
     JwtModule,
+    PaginationModule,
   ],
-  controllers: [NotificationExampleController],
+  controllers: [NotificationController],
   providers: [
     NotificationsGateway,
     NotificationService,
