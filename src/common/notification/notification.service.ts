@@ -87,6 +87,7 @@ export class NotificationService {
     }
   }
 
+
   async getUserNotifications(
     user: User,
     query: PaginationDto,
@@ -107,7 +108,6 @@ export class NotificationService {
           qb,
           paginationFormula,
         )
-
       return { data, pagination }
     } catch (error) {
       this.logger.error(
