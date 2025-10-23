@@ -12,6 +12,7 @@ import {
 } from '@/common/pagination/pagination.service'
 import { CreateUserAnswerOnboardingDto } from '../dto/create-user-answer.dto'
 import { getCreateSuccessMessage } from '@/common/utils/success-messages.utils'
+import { GetOnboardingQA } from '../types/get-onboarding-q-a.interface'
 
 @Injectable()
 export class OnboardingService {
@@ -27,7 +28,7 @@ export class OnboardingService {
 
   async getOnboardingQuestionsWithAnswers(
     query: PaginationDto,
-  ): Promise<PaginationResult<DeepPartial<OnboardingQuestion>>> {
+  ): Promise<PaginationResult<GetOnboardingQA>> {
     const paginationParams = paginationParamsFormula(query)
     const qb = this.onboardingQuestionRepository
       .createQueryBuilder('question')
@@ -49,7 +50,7 @@ export class OnboardingService {
       })
       return {
         id: question.id,
-        question: question.question,
+        question: question.questionText,
         answers,
       }
     })
