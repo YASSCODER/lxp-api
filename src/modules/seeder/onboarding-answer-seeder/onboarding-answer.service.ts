@@ -21,11 +21,9 @@ export class OnboardingAnswerSeederService {
   async seedOnboardingAnswers() {
     this.logger.log('Starting onboarding answers seeding...')
 
-    // Get all questions from the database
     const questions = await this.onboardingQuestionRepository.find()
 
     for (const question of questions) {
-      // Find the corresponding answer options from the enum
       const answerKey = Object.keys(Answers).find(
         (answerKey) =>
           Answers[answerKey as keyof typeof Answers].key === question.question,
@@ -40,9 +38,7 @@ export class OnboardingAnswerSeederService {
 
       const answerOptions = Answers[answerKey].options
 
-      // Create individual answer records for each option
       for (const option of answerOptions) {
-        // Check if this answer already exists
         const existingAnswer = await this.onboardingAnswerRepository
           .createQueryBuilder('answer')
           .where('answer.onboardingQuestionId = :questionId', {
@@ -60,17 +56,13 @@ export class OnboardingAnswerSeederService {
           continue
         }
 
-        // Handle different option formats
         let answerText: string
         let scale: number | null = null
 
-        // Check if option has 'text' and 'scale' properties (scale-based options)
         if ('text' in option && 'scale' in option) {
-          // Scale-based option (like A_BASE_LINE_LEVEL)
           answerText = JSON.stringify(option.text)
           scale = option.scale
         } else {
-          // Simple text option (like A_ROLE_FUNCTION)
           answerText = JSON.stringify(option)
         }
 
