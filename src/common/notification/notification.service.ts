@@ -87,9 +87,6 @@ export class NotificationService {
     }
   }
 
-  /**
-   * Get notifications for a specific user
-   */
   async getUserNotifications(
     user: User,
     query: PaginationDto,
@@ -120,9 +117,6 @@ export class NotificationService {
     }
   }
 
-  /**
-   * Mark notification as viewed
-   */
   async markAsViewed(notificationId: number, userId: number): Promise<boolean> {
     try {
       const result = await this.notificationRepository.update(

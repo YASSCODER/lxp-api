@@ -2,6 +2,7 @@ import { Role } from '@/common/models/entities/role.entity'
 import { User } from '@/common/models/entities/user.entity'
 import { OnboardingQuestion } from '@/common/models/entities/onboarding-question.entity'
 import { OnboardingAnswer } from '@/common/models/entities/onboarding-answer.entity'
+import { UserAnswerOnboarding } from '@/common/models/entities/user-answer-onboarding.entity'
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { RoleServiceSeeder } from './role/role.service'
@@ -18,6 +19,7 @@ import { OnboardingQuestionSeederController } from './onboarding-question-seeder
       User,
       OnboardingQuestion,
       OnboardingAnswer,
+      UserAnswerOnboarding,
     ]),
   ],
   providers: [
