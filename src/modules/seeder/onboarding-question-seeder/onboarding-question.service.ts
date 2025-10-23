@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { OnboardingQuestion } from '@/common/models/entities/onboarding-question.entity'
 import { OnboardingAnswer } from '@/common/models/entities/onboarding-answer.entity'
+import { UserAnswerOnboarding } from '@/common/models/entities/user-answer-onboarding.entity'
 import { QuestionType, QuestionEnum } from '@/common/enum/question.enum'
 import { Answers, AnswerEnum } from '@/common/enum/answers.enum'
 import { QuestionTextEmbedded } from '@/common/models/embedded/question-text.embedded'
@@ -15,9 +16,75 @@ export class OnboardingQuestionSeederService {
     private readonly onboardingQuestionRepository: Repository<OnboardingQuestion>,
     @InjectRepository(OnboardingAnswer)
     private readonly onboardingAnswerRepository: Repository<OnboardingAnswer>,
+    @InjectRepository(UserAnswerOnboarding)
+    private readonly userAnswerOnboardingRepository: Repository<UserAnswerOnboarding>,
   ) {}
 
   private readonly logger = new Logger('OnboardingQuestionSeederService')
+
+  async deleteAllQuestionsAndAnswersByAnswerKey() {
+    try {
+      const QuestionKeysToKeep = [
+        QuestionEnum.Q_PRIMARY_FUNCTIONALITY,
+        QuestionEnum.Q_SENIORITY_LEVEL,
+        QuestionEnum.Q_TARGET_TRACK,
+        QuestionEnum.Q_PRIMARY_GOAL,
+        QuestionEnum.Q_SUCCESS_METRIC,
+        QuestionEnum.Q_WEEKLY_TIME_BUDGET,
+      ]
+      const QuestionKeysToDelete = Object.keys(QuestionType).filter(
+        (questionKey) =>
+          !QuestionKeysToKeep.includes(QuestionEnum[questionKey]),
+      )
+
+      this.logger.log(
+        `The following questions and answers will be kept: ${QuestionKeysToKeep}`,
+      )
+
+      this.logger.log(
+        `The following questions and answers will be deleted: ${QuestionKeysToDelete}`,
+      )
+
+      for (const questionKey of QuestionKeysToDelete) {
+        this.logger.log(`Deleting question ${questionKey}`)
+        const question = await this.onboardingQuestionRepository.findOne({
+          where: {
+            question: QuestionEnum[questionKey],
+          },
+        })
+
+        this.logger.log(
+          `Question found: ${question ? question.question : 'null'}`,
+        )
+
+        if (question) {
+          await this.userAnswerOnboardingRepository.delete({
+            onboardingQuestionId: question.id,
+          })
+          this.logger.log(
+            `Deleted user answers for question ${question.question}`,
+          )
+
+          await this.onboardingAnswerRepository.delete({
+            onboardingQuestionId: question.id,
+          })
+          this.logger.log(`Deleted answers for question ${question.question}`)
+
+          await this.onboardingQuestionRepository.delete(question.id)
+          this.logger.log(`Deleted question ${question.question}`)
+        } else {
+          this.logger.warn(`Question not found: ${questionKey}`)
+        }
+      }
+
+      this.logger.log('All questions and answers deleted successfully')
+    } catch (error) {
+      this.logger.error(
+        'Failed to delete all questions and answers by answer key',
+        error.stack,
+      )
+    }
+  }
 
   async seedOnboardingQuestions() {
     this.logger.log('Starting onboarding questions and answers seeding...')

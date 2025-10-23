@@ -1,5 +1,6 @@
-import { Controller, Post, Delete, Get } from '@nestjs/common'
+import { Controller, Post, Delete, Get, Body } from '@nestjs/common'
 import { OnboardingQuestionSeederService } from './onboarding-question.service'
+import { AnswerEnum } from '@/common/enum/answers.enum'
 
 @Controller('seeder/onboarding-questions')
 export class OnboardingQuestionSeederController {
@@ -16,6 +17,15 @@ export class OnboardingQuestionSeederController {
     return {
       message: 'Onboarding questions and answers seeded successfully',
       counts,
+    }
+  }
+
+  @Delete('delete-by-answer-key')
+  async deleteAllQuestionsAndAnswersByAnswerKey() {
+    await this.onboardingQuestionSeederService.deleteAllQuestionsAndAnswersByAnswerKey()
+
+    return {
+      message: 'All questions and answers deleted successfully',
     }
   }
 

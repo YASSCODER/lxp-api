@@ -1,14 +1,17 @@
 export const QuestionType = {
+  // 1- this question is used !
   Q_PRIMARY_FUNCTIONALITY: {
     key: 'Q_PRIMARY_FUNCTIONALITY',
     text: { en: 'What is your primary role?', ar: 'ما هي دورك الأساسي؟' },
   },
 
+  // 2- this question is used !
   Q_SENIORITY_LEVEL: {
     key: 'Q_SENIORITY_LEVEL',
     text: { en: 'What is your seniority level?', ar: 'ما هي مستوى خبرتك؟' },
   },
 
+  // 3- this question is used !
   Q_TARGET_TRACK: {
     key: 'Q_TARGET_TRACK',
     text: {
@@ -25,6 +28,7 @@ export const QuestionType = {
     },
   },
 
+  // 4- this question is used !
   Q_PRIMARY_GOAL: {
     key: 'Q_PRIMARY_GOAL',
     text: {
@@ -41,6 +45,7 @@ export const QuestionType = {
     },
   },
 
+  // 5- this question is used !
   Q_SUCCESS_METRIC: {
     key: 'Q_SUCCESS_METRIC',
     text: {
@@ -65,6 +70,7 @@ export const QuestionType = {
     },
   },
 
+  // 6- this question is used !
   Q_WEEKLY_TIME_BUDGET: {
     key: 'Q_WEEKLY_TIME_BUDGET',
     text: {
