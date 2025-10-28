@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -30,7 +31,7 @@ export class User extends BaseModel {
   @Column({ type: 'varchar', length: 100, unique: true, nullable: false })
   email: string
 
-  @Column({ type: 'varchar', length: 255, nullable: false })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   password: string
 
   @Column({ type: 'varchar', nullable: true, unique: true })
@@ -47,6 +48,39 @@ export class User extends BaseModel {
 
   @Column({ type: 'int', nullable: true })
   instructorId: number
+
+  @Index()
+  @Column({ name: 'google_id', nullable: true, unique: true })
+  googleId?: string
+
+  @Column({ name: 'google_email_verified', type: 'boolean', default: false })
+  googleEmailVerified: boolean
+
+  @Column({
+    name: 'google_refresh_token',
+    nullable: true,
+    type: 'text',
+    select: false,
+  })
+  googleRefreshToken?: string
+
+  @Column({
+    name: 'google_access_token',
+    nullable: true,
+    type: 'text',
+    select: false,
+  })
+  googleAccessToken?: string
+
+  @Column({
+    name: 'google_access_token_expiry',
+    type: 'timestamp with time zone',
+    nullable: true,
+  })
+  googleAccessTokenExpiry?: Date
+
+  @Column({ name: 'google_tokens_revoked', type: 'boolean', default: false })
+  googleTokensRevoked: boolean
 
   @ManyToOne(() => Role, (role) => role.users)
   @JoinColumn({ name: 'roleId' })

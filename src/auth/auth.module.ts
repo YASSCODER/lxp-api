@@ -11,6 +11,7 @@ import { AuthController } from './api/auth.controller'
 import { AuthService } from './api/auth.service'
 import { LocalStrategy } from './strategies/local.strategy'
 import { JwtStrategy } from './strategies/jwt.strategy'
+import { GoogleStrategy } from './strategies/google.strategy'
 import { LocalAuthGuard } from './guards/local-auth.guard'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { RolesGuard } from './guards/roles.guard'
@@ -43,6 +44,7 @@ import { AuthExceptionFilter } from './filters/auth-exception.filter'
     AuthService,
     LocalStrategy,
     JwtStrategy,
+    GoogleStrategy,
     LocalAuthGuard,
     JwtAuthGuard,
     RolesGuard,
