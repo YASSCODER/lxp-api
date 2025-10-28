@@ -110,7 +110,6 @@ export class GoogleStrategy {
       try {
         return await this.verifyAccessToken(token)
       } catch (accessTokenError) {
-        // Both failed, throw a clear error
         throw new UnauthorizedException({
           message: {
             en: 'Invalid Google token. Please ensure you are using a valid Google ID token or access token.',

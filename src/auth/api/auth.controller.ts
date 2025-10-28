@@ -95,4 +95,15 @@ export class AuthController {
       return res.status(500).json({ error: error.message })
     }
   }
+
+  @Post('google/login/')
+  async googleLoginWithToken(
+    @Body() googleSignupDto: GoogleSignupDto,
+    @Ip() ip: string,
+  ) {
+    return this.authService.googleLoginWithToken(
+      googleSignupDto.googleToken,
+      ip,
+    )
+  }
 }

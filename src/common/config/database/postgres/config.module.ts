@@ -10,7 +10,7 @@ import { PostgresConfigServiceModule } from './postgres-config.module'
       imports: [PostgresConfigServiceModule],
       inject: [PostgresConfigService],
       useFactory: (postgresConfigService: PostgresConfigService) => ({
-        type: 'postgres' as const,
+        type: 'postgres',
         host: postgresConfigService.host,
         port: postgresConfigService.port,
         username: postgresConfigService.username,
