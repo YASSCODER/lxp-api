@@ -5,7 +5,7 @@ export function createUserLogData(
   userId: number,
   action: string,
   status: LogStatus,
-  ip: string,
+  ip?: string,
 ): UserLogInterface {
   return {
     userId,
