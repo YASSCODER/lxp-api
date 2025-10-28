@@ -342,8 +342,8 @@ export class AuthService {
       })
 
       const learner = this.learnerRepository.create({
-        currentLevels: googleSignupDto.currentLevels as EntrySkillLevel,
-        targetLevels: googleSignupDto.targetLevels as TargetSkillLevel,
+        currentLevels: EntrySkillLevel.BEGINNER,
+        targetLevels: TargetSkillLevel.INTERMEDIATE,
         roi: 0,
         score: 0,
         isPresent: false,
@@ -353,16 +353,12 @@ export class AuthService {
       const user = this.userRepository.create({
         email: googleUser.email,
         password: null,
-        fullName: googleSignupDto.fullname,
-        phone: googleSignupDto.phone || '',
+        fullName: googleUser.fullName,
         roleId: learnerRole.id,
         learnerId: savedLearner.id,
-        file: googleSignupDto.file,
         isActive: true,
         googleId: googleUser.googleId,
         googleEmailVerified: googleUser.emailVerified,
-        googleAccessToken: googleSignupDto.googleToken,
-        googleTokensRevoked: false,
       })
       const savedUser = await this.userRepository.save(user)
 
@@ -464,16 +460,12 @@ export class AuthService {
       const user = this.userRepository.create({
         email: googleUser.email,
         password: null,
-        fullName: googleSignupDto.fullname,
-        phone: googleSignupDto.phone || '',
+        fullName: googleUser.fullName,
         roleId: instructorRole.id,
         instructorId: savedInstructor.id,
-        file: googleSignupDto.file,
         isActive: true,
         googleId: googleUser.googleId,
         googleEmailVerified: googleUser.emailVerified,
-        googleAccessToken: googleSignupDto.googleToken,
-        googleTokensRevoked: false,
       })
       const savedUser = await this.userRepository.save(user)
 
@@ -520,11 +512,9 @@ export class AuthService {
     })
   }
 
-  async googleLoginWithCode(code: string, ip: string) {
+  async googleLoginWithToken(googleToken: string, ip: string) {
     try {
-      const { tokens } = await this.googleStrategy.getTokens(code)
-
-      const googleUser = await this.googleStrategy.verifyToken(tokens.id_token)
+      const googleUser = await this.googleStrategy.verifyToken(googleToken)
 
       let user = await this.userRepository.findOne({
         where: { googleId: googleUser.googleId },
@@ -540,7 +530,7 @@ export class AuthService {
         if (user && !user.googleId) {
           user.googleId = googleUser.googleId
           user.googleEmailVerified = googleUser.emailVerified
-          user.googleAccessToken = tokens.id_token
+          user.googleAccessToken = googleToken
           await this.userRepository.save(user)
         }
       }
@@ -554,8 +544,7 @@ export class AuthService {
         })
       }
 
-      user.googleAccessToken = tokens.id_token
-      user.googleRefreshToken = tokens.refresh_token
+      user.googleAccessToken = googleToken
       user.googleEmailVerified = googleUser.emailVerified
       user.googleTokensRevoked = false
       await this.userRepository.save(user)
