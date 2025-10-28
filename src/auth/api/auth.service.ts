@@ -424,7 +424,6 @@ export class AuthService {
         })
       }
 
-      // 3. Check if email already exists
       const existingUser = await this.userRepository.findOne({
         where: { email: ILike(googleUser.email) },
       })
@@ -437,7 +436,6 @@ export class AuthService {
         })
       }
 
-      // 4. Find Instructor role
       const instructorRole = await this.roleRepository.findOne({
         where: {
           title: {
@@ -447,7 +445,6 @@ export class AuthService {
         },
       })
 
-      // Optional: create role if not exists
       if (!instructorRole) {
         throwFormValidationError({
           errorCode: ErrorCodes.ENTITY_NOT_FOUND,
