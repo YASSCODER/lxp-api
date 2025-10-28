@@ -515,7 +515,6 @@ export class AuthService {
   async googleLoginWithToken(googleToken: string, ip: string) {
     try {
       const googleUser = await this.googleStrategy.verifyToken(googleToken)
-      console.log('from google ->', googleUser)
 
       let user = await this.userRepository.findOne({
         where: { googleId: googleUser.googleId },
