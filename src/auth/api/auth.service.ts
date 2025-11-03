@@ -31,6 +31,7 @@ import { GoogleStrategy } from '../strategies/google.strategy'
 import { ErrorCodes } from '@/common/enum/error-codes.enum'
 import { EntrySkillLevel } from '@/common/enum/entry-skill-level.enum'
 import { TargetSkillLevel } from '@/common/enum/target-skill-level.enum'
+import { GooglePayloadInterface } from '../interfaces/google-payload.interface'
 
 @Injectable()
 export class AuthService {
@@ -297,196 +298,39 @@ export class AuthService {
     })
   }
 
-  public async googleSignupLearner(
-    googleSignupDto: GoogleSignupDto,
+  async signUpAccountWithGoogle(
+    googleUser: GooglePayloadInterface,
     ip: string,
   ) {
-    try {
-      const googleUser = await this.googleStrategy.verifyToken(
-        googleSignupDto.googleToken,
-      )
-
-      const existingGoogleUser = await this.userRepository.findOne({
-        where: { googleId: googleUser.googleId },
-      })
-
-      if (existingGoogleUser) {
-        throw new ConflictException({
-          message: {
-            en: 'User with this Google account already exists',
-            ar: 'المستخدم بهذا الحساب من Google موجود بالفعل',
-          },
-        })
-      }
-
-      const existingUser = await this.userRepository.findOne({
-        where: { email: ILike(googleUser.email) },
-      })
-
-      if (existingUser) {
-        throw new ConflictException({
-          message: {
-            en: 'User with this email already exists. Please login instead.',
-            ar: 'المستخدم بهذا البريد الإلكتروني موجود بالفعل. يرجى تسجيل الدخول بدلاً من ذلك.',
-          },
-        })
-      }
-
-      const learnerRole = await this.roleRepository.findOne({
-        where: {
-          title: {
-            en: UserRole.LEARNER,
-            ar: 'متعلم',
-          } as NameEmbedded,
-        },
-      })
-
-      const learner = this.learnerRepository.create({
-        currentLevels: EntrySkillLevel.BEGINNER,
-        targetLevels: TargetSkillLevel.INTERMEDIATE,
-        roi: 0,
-        score: 0,
-        isPresent: false,
-      })
-      const savedLearner = await this.learnerRepository.save(learner)
-
-      const user = this.userRepository.create({
-        email: googleUser.email,
-        password: null,
-        fullName: googleUser.fullName,
-        roleId: learnerRole.id,
-        learnerId: savedLearner.id,
-        isActive: true,
-        googleId: googleUser.googleId,
-        googleEmailVerified: googleUser.emailVerified,
-      })
-      const savedUser = await this.userRepository.save(user)
-
-      const userWithRole = await this.userRepository.findOne({
-        where: { id: savedUser.id },
-        relations: { role: true },
-      })
-
-      const action = `User ${savedUser.email} registered via Google from ${ip}`
-      this.userLogService.saveUserLog(
-        createUserLogData(savedUser.id, action, LogStatus.SUCCESS, ip),
-      )
-
-      const role = userWithRole?.role?.title?.en || UserRole.LEARNER
-      const payload = { id: savedUser.id, role: role }
-      const userPayload = {
-        userId: savedUser.id,
-        fullName: savedUser.fullName,
-        email: savedUser.email,
-        learnerId: savedUser.learnerId,
-        instructorId: savedUser.instructorId,
-      }
-
-      return {
-        token: this.jwtService.sign(payload),
-        user: {
-          role,
-          ...userPayload,
-        },
-        message: {
-          en: 'Learner account created successfully with Google',
-          ar: 'تم إنشاء حساب المتعلم بنجاح باستخدام Google',
-        },
-      }
-    } catch (error) {
-      console.error('Google signup error:', error)
-      throw error
+    const accountExists = await this.findUserByGoogleId(
+      googleUser.user.googleId,
+    )
+    if (accountExists) {
+      return this.googleLoginWithToken(googleUser.token, ip)
     }
-  }
 
-  public async googleSignupInstructor(
-    googleSignupDto: GoogleSignupDto,
-    ip: string,
-  ) {
-    try {
-      const googleUser = await this.googleStrategy.verifyToken(
-        googleSignupDto.googleToken,
-      )
+    const existingUserByEmail = await this.userRepository.findOne({
+      where: { email: ILike(googleUser.user.email) },
+    })
 
-      const existingGoogleUser = await this.userRepository.findOne({
-        where: { googleId: googleUser.googleId },
-      })
-      if (existingGoogleUser) {
-        throw new ConflictException({
-          message: {
-            en: 'User with this Google account already exists',
-            ar: 'المستخدم بهذا الحساب من Google موجود بالفعل',
-          },
-        })
-      }
-
-      const existingUser = await this.userRepository.findOne({
-        where: { email: ILike(googleUser.email) },
-      })
-      if (existingUser) {
-        throw new ConflictException({
-          message: {
-            en: 'User with this email already exists. Please login instead.',
-            ar: 'المستخدم بهذا البريد الإلكتروني موجود بالفعل. يرجى تسجيل الدخول بدلاً من ذلك.',
-          },
-        })
-      }
-
-      const instructorRole = await this.roleRepository.findOne({
-        where: {
-          title: {
-            en: UserRole.INSTRUCTOR,
-            ar: 'مدرب',
-          } as NameEmbedded,
-        },
-      })
-
-      if (!instructorRole) {
-        throwFormValidationError({
-          errorCode: ErrorCodes.ENTITY_NOT_FOUND,
-          message: {
-            en: 'Instructor role not found',
-            ar: 'الدور المدرب غير موجود',
-          },
-        })
-      }
-
-      const instructor = this.instructorRepository.create({
-        rating: 0,
-        isVerified: false,
-      })
-      const savedInstructor = await this.instructorRepository.save(instructor)
-
-      const user = this.userRepository.create({
-        email: googleUser.email,
-        password: null,
-        fullName: googleUser.fullName,
-        roleId: instructorRole.id,
-        instructorId: savedInstructor.id,
-        isActive: true,
-        googleId: googleUser.googleId,
-        googleEmailVerified: googleUser.emailVerified,
-      })
-      const savedUser = await this.userRepository.save(user)
+    if (existingUserByEmail) {
+      existingUserByEmail.googleId = googleUser.user.googleId
+      existingUserByEmail.googleEmailVerified = true
+      await this.userRepository.save(existingUserByEmail)
 
       const userWithRole = await this.userRepository.findOne({
-        where: { id: savedUser.id },
+        where: { id: existingUserByEmail.id },
         relations: { role: true },
       })
 
-      const action = `Instructor ${savedUser.email} registered via Google from ${ip}`
-      this.userLogService.saveUserLog(
-        createUserLogData(savedUser.id, action, LogStatus.SUCCESS, ip),
-      )
-
-      const role = userWithRole?.role?.title?.en || UserRole.INSTRUCTOR
-      const payload = { id: savedUser.id, role }
+      const role = userWithRole?.role?.title?.en || null
+      const payload = { id: existingUserByEmail.id, role: role }
       const userPayload = {
-        userId: savedUser.id,
-        fullName: savedUser.fullName,
-        email: savedUser.email,
-        learnerId: savedUser.learnerId,
-        instructorId: savedUser.instructorId,
+        userId: existingUserByEmail.id,
+        fullName: existingUserByEmail.fullName,
+        email: existingUserByEmail.email,
+        learnerId: existingUserByEmail.learnerId,
+        instructorId: existingUserByEmail.instructorId,
       }
 
       return {
@@ -495,14 +339,53 @@ export class AuthService {
           role,
           ...userPayload,
         },
-        message: {
-          en: 'Instructor account created successfully with Google',
-          ar: 'تم إنشاء حساب المدرب بنجاح باستخدام Google',
-        },
       }
-    } catch (error) {
-      console.error('Google signup instructor error:', error)
-      throw error
+    }
+
+    const viewerRole = await this.roleRepository.findOne({
+      where: {
+        title: {
+          en: UserRole.VIEWER,
+          ar: 'مشاهد',
+        } as NameEmbedded,
+      },
+    })
+
+    const user = this.userRepository.create({
+      email: googleUser.user.email,
+      password: null,
+      fullName: googleUser.user.fullName,
+      roleId: viewerRole.id,
+      learnerId: null,
+      instructorId: null,
+      isActive: true,
+      googleId: googleUser.user.googleId,
+      googleEmailVerified: true,
+    })
+    const savedUser = await this.userRepository.save(user)
+
+    const action = `User ${savedUser.email} registered via Google from ${ip}`
+    this.userLogService.saveUserLog(
+      createUserLogData(savedUser.id, action, LogStatus.SUCCESS, ip),
+    )
+
+    const userPayload = {
+      userId: savedUser.id,
+      fullName: savedUser.fullName,
+      email: savedUser.email,
+      learnerId: savedUser.learnerId,
+      instructorId: savedUser.instructorId,
+    }
+
+    return {
+      token: this.jwtService.sign({
+        id: savedUser.id,
+        role: viewerRole.title.en,
+      }),
+      user: {
+        role: viewerRole.title.en,
+        ...userPayload,
+      },
     }
   }
 
@@ -549,7 +432,7 @@ export class AuthService {
       user.googleTokensRevoked = false
       await this.userRepository.save(user)
 
-      const role = user.role.title.en
+      const role = user.role?.title?.en || null
       const payload = { id: user.id, role: role }
       const userPayload = {
         userId: user.id,
@@ -574,6 +457,211 @@ export class AuthService {
     } catch (error) {
       console.error('Google OAuth login error:', error)
       throw error
+    }
+  }
+
+  private async createLearnerAndAssignRole(user: User, ip: string) {
+    if (user.learnerId) {
+      throw new ConflictException({
+        message: {
+          en: 'User is already a learner',
+          ar: 'المستخدم متعلم بالفعل',
+        },
+      })
+    }
+
+    const learnerRole = await this.roleRepository.findOne({
+      where: {
+        title: {
+          en: UserRole.LEARNER,
+          ar: 'متعلم',
+        } as NameEmbedded,
+      },
+    })
+
+    if (!learnerRole) {
+      throwFormValidationError({
+        errorCode: ErrorCodes.ENTITY_NOT_FOUND,
+        message: {
+          en: 'Learner role not found',
+          ar: 'دور المتعلم غير موجود',
+        },
+      })
+    }
+
+    const learner = this.learnerRepository.create({
+      currentLevels: EntrySkillLevel.BEGINNER,
+      targetLevels: TargetSkillLevel.INTERMEDIATE,
+      roi: 0,
+      score: 0,
+      isPresent: false,
+    })
+    const savedLearner = await this.learnerRepository.save(learner)
+
+    user.roleId = learnerRole.id
+    user.learnerId = savedLearner.id
+    await this.userRepository.save(user)
+
+    return { learnerRole, savedLearner }
+  }
+
+  private async createInstructorAndAssignRole(user: User, ip: string) {
+    if (user.instructorId) {
+      throw new ConflictException({
+        message: {
+          en: 'User is already an instructor',
+          ar: 'المستخدم مدرب بالفعل',
+        },
+      })
+    }
+
+    const instructorRole = await this.roleRepository.findOne({
+      where: {
+        title: {
+          en: UserRole.INSTRUCTOR,
+          ar: 'مدرب',
+        } as NameEmbedded,
+      },
+    })
+
+    if (!instructorRole) {
+      throwFormValidationError({
+        errorCode: ErrorCodes.ENTITY_NOT_FOUND,
+        message: {
+          en: 'Instructor role not found',
+          ar: 'دور المدرب غير موجود',
+        },
+      })
+    }
+
+    const instructor = this.instructorRepository.create({
+      rating: 0,
+      isVerified: false,
+    })
+    const savedInstructor = await this.instructorRepository.save(instructor)
+
+    user.roleId = instructorRole.id
+    user.instructorId = savedInstructor.id
+    await this.userRepository.save(user)
+
+    return { instructorRole, savedInstructor }
+  }
+
+  async completeGoogleSignupLearner(userId: number, ip: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: { role: true },
+    })
+
+    if (!user) {
+      throwAuthorizationValidationError({
+        message: {
+          en: 'User not found',
+          ar: 'المستخدم غير موجود',
+        },
+      })
+    }
+
+    if (user.roleId) {
+      throw new ConflictException({
+        message: {
+          en: 'User already has a role assigned',
+          ar: 'المستخدم لديه دور مخصص بالفعل',
+        },
+      })
+    }
+
+    await this.createLearnerAndAssignRole(user, ip)
+
+    const userWithRole = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: { role: true },
+    })
+
+    const action = `User ${user.email} completed Google signup as Learner from ${ip}`
+    this.userLogService.saveUserLog(
+      createUserLogData(user.id, action, LogStatus.SUCCESS, ip),
+    )
+
+    const role = userWithRole?.role?.title?.en || UserRole.LEARNER
+    const payload = { id: user.id, role: role }
+    const userPayload = {
+      userId: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      learnerId: user.learnerId,
+      instructorId: user.instructorId,
+    }
+
+    return {
+      token: this.jwtService.sign(payload),
+      user: {
+        role,
+        ...userPayload,
+      },
+      message: {
+        en: 'Learner account completed successfully',
+        ar: 'تم إكمال حساب المتعلم بنجاح',
+      },
+    }
+  }
+
+  async completeGoogleSignupInstructor(userId: number, ip: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: { role: true },
+    })
+
+    if (!user) {
+      throwAuthorizationValidationError({
+        message: {
+          en: 'User not found',
+          ar: 'المستخدم غير موجود',
+        },
+      })
+    }
+
+    if (user.roleId) {
+      throw new ConflictException({
+        message: {
+          en: 'User already has a role assigned',
+          ar: 'المستخدم لديه دور مخصص بالفعل',
+        },
+      })
+    }
+
+    await this.createInstructorAndAssignRole(user, ip)
+
+    const userWithRole = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: { role: true },
+    })
+
+    const action = `User ${user.email} completed Google signup as Instructor from ${ip}`
+    this.userLogService.saveUserLog(
+      createUserLogData(user.id, action, LogStatus.SUCCESS, ip),
+    )
+
+    const role = userWithRole?.role?.title?.en || UserRole.INSTRUCTOR
+    const payload = { id: user.id, role: role }
+    const userPayload = {
+      userId: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      learnerId: user.learnerId,
+      instructorId: user.instructorId,
+    }
+
+    return {
+      token: this.jwtService.sign(payload),
+      user: {
+        role,
+        ...userPayload,
+      },
+      message: {
+        en: 'Instructor account completed successfully',
+        ar: 'تم إكمال حساب المدرب بنجاح',
+      },
     }
   }
 }
