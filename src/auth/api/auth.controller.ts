@@ -87,29 +87,24 @@ export class AuthController {
         ip,
       )
 
-      // Get frontend redirect URL from environment or use default
       const frontendRedirectUrl =
         this.configService.get<string>('FRONTEND_REDIRECT_URL') ||
         this.configService.get<string>('app.url') ||
         'http://localhost:3000'
 
-      // Build redirect URL with token and user info
       const redirectUrl = new URL(frontendRedirectUrl)
       redirectUrl.searchParams.set('token', result.token)
       redirectUrl.searchParams.set('userId', result.user.userId.toString())
       redirectUrl.searchParams.set('role', result.user.role || 'null')
 
-      // Add user info as query params
       if (result.user.email) {
         redirectUrl.searchParams.set('email', result.user.email)
       }
 
-      // Redirect to frontend
       return res.redirect(redirectUrl.toString())
     } catch (error) {
       console.error('Google OAuth callback error:', error)
 
-      // Redirect to frontend with error
       const frontendRedirectUrl =
         this.configService.get<string>('FRONTEND_REDIRECT_URL') ||
         this.configService.get<string>('app.url') ||
