@@ -31,14 +31,14 @@ export class RoleServiceSeeder {
       },
     }
 
-    const ViewerRole = {
+    const viewerRole = {
       title: {
         en: 'VIEWER',
         ar: 'مشاهد',
       },
     }
 
-    const roleToAdd = [adminRole, learnerRole, instructorRole, ViewerRole]
+    const roleToAdd = [adminRole, learnerRole, instructorRole, viewerRole]
 
     for (const role of roleToAdd) {
       const existingRole = await this.roleRepository
