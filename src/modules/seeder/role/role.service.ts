@@ -37,8 +37,9 @@ export class RoleServiceSeeder {
         ar: 'مشاهد',
       },
     }
-
+ 
     const roleToAdd = [adminRole, learnerRole, instructorRole, viewerRole]
+
 
     for (const role of roleToAdd) {
       const existingRole = await this.roleRepository
