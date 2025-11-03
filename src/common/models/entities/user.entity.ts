@@ -40,7 +40,7 @@ export class User extends BaseModel {
   @Column({ type: 'boolean', default: true })
   isActive: boolean
 
-  @Column({ type: 'uuid', nullable: false })
+  @Column({ type: 'uuid', nullable: true })
   roleId: string
 
   @Column({ type: 'int', nullable: true })
