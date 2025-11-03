@@ -9,7 +9,10 @@ import {
   UseFilters,
   Query,
   Res,
+  Param,
+  UnauthorizedException,
 } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { AuthService } from './auth.service'
 import { JwtAuthGuard } from '../guards/jwt-auth.guard'
 import { LocalAuthGuard } from '../guards/local-auth.guard'
@@ -19,6 +22,9 @@ import { GoogleSignupDto } from '../dto/google-auth.dto'
 import { AuthExceptionFilter } from '../filters/auth-exception.filter'
 import { GoogleStrategy } from '../strategies/google.strategy'
 import { Response } from 'express'
+import { RolesGuard } from '../guards/roles.guard'
+import { Roles } from '../decorators/roles.decorator'
+import { UserRole } from '@/common/enum/user-role.enum'
 
 @Controller('auth')
 @UseFilters(AuthExceptionFilter)
@@ -26,6 +32,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly googleStrategy: GoogleStrategy,
+    private readonly configService: ConfigService,
   ) {}
 
   @Get('verify')
@@ -50,22 +57,6 @@ export class AuthController {
     return this.authService.signupInstructor(instructorSignUpDto)
   }
 
-  @Post('google/signup/learner')
-  async googleSignup(
-    @Body() googleSignupDto: GoogleSignupDto,
-    @Ip() ip: string,
-  ) {
-    return this.authService.googleSignupLearner(googleSignupDto, ip)
-  }
-
-  @Post('google/signup/instructor')
-  async googleSignupInstructor(
-    @Body() googleSignupDto: GoogleSignupDto,
-    @Ip() ip: string,
-  ) {
-    return this.authService.googleSignupInstructor(googleSignupDto, ip)
-  }
-
   @Get('google/authorize')
   getGoogleAuthUrl() {
     const authUrl = this.googleStrategy.generateAuthUrl()
@@ -73,7 +64,11 @@ export class AuthController {
   }
 
   @Get('oauth2callback')
-  async oauth2callback(@Query('code') code: string, @Res() res: Response) {
+  async oauth2callback(
+    @Query('code') code: string,
+    @Ip() ip: string,
+    @Res() res: Response,
+  ) {
     if (!code) {
       return res.status(400).send('No code provided')
     }
@@ -82,18 +77,69 @@ export class AuthController {
       const { tokens } = await this.googleStrategy.getTokens(code)
       const googleUser = await this.googleStrategy.verifyToken(tokens.id_token)
 
-      return res.json({
+      const googlePayload = {
         token: tokens.id_token,
-        user: {
-          googleId: googleUser.googleId,
-          email: googleUser.email,
-          fullName: googleUser.fullName,
-        },
-      })
+        user: googleUser,
+      }
+
+      const result = await this.authService.signUpAccountWithGoogle(
+        googlePayload,
+        ip,
+      )
+
+      // Get frontend redirect URL from environment or use default
+      const frontendRedirectUrl =
+        this.configService.get<string>('FRONTEND_REDIRECT_URL') ||
+        this.configService.get<string>('app.url') ||
+        'http://localhost:3000'
+
+      // Build redirect URL with token and user info
+      const redirectUrl = new URL(frontendRedirectUrl)
+      redirectUrl.searchParams.set('token', result.token)
+      redirectUrl.searchParams.set('userId', result.user.userId.toString())
+      redirectUrl.searchParams.set('role', result.user.role || 'null')
+
+      // Add user info as query params
+      if (result.user.email) {
+        redirectUrl.searchParams.set('email', result.user.email)
+      }
+
+      // Redirect to frontend
+      return res.redirect(redirectUrl.toString())
     } catch (error) {
       console.error('Google OAuth callback error:', error)
-      return res.status(500).json({ error: error.message })
+
+      // Redirect to frontend with error
+      const frontendRedirectUrl =
+        this.configService.get<string>('FRONTEND_REDIRECT_URL') ||
+        this.configService.get<string>('app.url') ||
+        'http://localhost:3000'
+
+      const redirectUrl = new URL(frontendRedirectUrl)
+      redirectUrl.searchParams.set('error', error.message || 'OAuth failed')
+
+      return res.redirect(redirectUrl.toString())
     }
+  }
+
+  @Post('google/complete/signup-learner')
+  @UseGuards(JwtAuthGuard)
+  async completeSignupLearner(@Request() request, @Ip() ip: string) {
+    const user = request.user
+    if (!user) {
+      throw new UnauthorizedException('User not authenticated')
+    }
+    return this.authService.completeGoogleSignupLearner(user.id, ip)
+  }
+
+  @Post('google/complete/signup-instructor')
+  @UseGuards(JwtAuthGuard)
+  async completeSignupInstructor(@Request() request, @Ip() ip: string) {
+    const user = request.user
+    if (!user) {
+      throw new UnauthorizedException('User not authenticated')
+    }
+    return this.authService.completeGoogleSignupInstructor(user.id, ip)
   }
 
   @Post('google/login/')

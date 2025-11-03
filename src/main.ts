@@ -33,7 +33,7 @@ export async function bootstrap() {
 
   app.setGlobalPrefix('api')
 
-  const port = Number(process.env.PORT ?? appConfig.port ?? 3000)
+  const port = Number(process.env.PORT ?? appConfig.port ?? 8000)
   const host = (appConfig as any).host ?? '0.0.0.0'
 
   await app.listen(port, host)
