@@ -306,7 +306,18 @@ export class AuthService {
       googleUser.user.googleId,
     )
     if (accountExists) {
-      return this.googleLoginWithToken(googleUser.token, ip)
+      // Update tokens for existing user
+      await this.userRepository.update(accountExists.id, {
+        googleAccessToken: googleUser.accessToken,
+        googleRefreshToken: googleUser.refreshToken,
+        googleAccessTokenExpiry: googleUser.expiryDate,
+        googleTokensRevoked: false,
+      })
+      return this.googleLoginWithToken(googleUser.token, ip, {
+        accessToken: googleUser.accessToken,
+        refreshToken: googleUser.refreshToken,
+        expiryDate: googleUser.expiryDate,
+      })
     }
 
     const existingUserByEmail = await this.userRepository.findOne({
@@ -314,9 +325,14 @@ export class AuthService {
     })
 
     if (existingUserByEmail) {
-      existingUserByEmail.googleId = googleUser.user.googleId
-      existingUserByEmail.googleEmailVerified = true
-      await this.userRepository.save(existingUserByEmail)
+      await this.userRepository.update(existingUserByEmail.id, {
+        googleId: googleUser.user.googleId,
+        googleEmailVerified: true,
+        googleAccessToken: googleUser.accessToken,
+        googleRefreshToken: googleUser.refreshToken,
+        googleAccessTokenExpiry: googleUser.expiryDate,
+        googleTokensRevoked: false,
+      })
 
       const userWithRole = await this.userRepository.findOne({
         where: { id: existingUserByEmail.id },
@@ -361,6 +377,10 @@ export class AuthService {
       isActive: true,
       googleId: googleUser.user.googleId,
       googleEmailVerified: true,
+      googleAccessToken: googleUser.accessToken,
+      googleRefreshToken: googleUser.refreshToken,
+      googleAccessTokenExpiry: googleUser.expiryDate,
+      googleTokensRevoked: false,
     })
     const savedUser = await this.userRepository.save(user)
 
@@ -395,7 +415,15 @@ export class AuthService {
     })
   }
 
-  async googleLoginWithToken(googleToken: string, ip: string) {
+  async googleLoginWithToken(
+    googleToken: string,
+    ip: string,
+    tokens?: {
+      accessToken?: string
+      refreshToken?: string
+      expiryDate?: Date
+    },
+  ) {
     try {
       const googleUser = await this.googleStrategy.verifyToken(googleToken)
 
@@ -411,10 +439,16 @@ export class AuthService {
         })
 
         if (user && !user.googleId) {
-          user.googleId = googleUser.googleId
-          user.googleEmailVerified = googleUser.emailVerified
-          user.googleAccessToken = googleToken
-          await this.userRepository.save(user)
+          await this.userRepository.update(user.id, {
+            googleId: googleUser.googleId,
+            googleEmailVerified: googleUser.emailVerified,
+            ...(tokens?.accessToken && {
+              googleAccessToken: tokens.accessToken,
+              googleRefreshToken: tokens.refreshToken,
+              googleAccessTokenExpiry: tokens.expiryDate,
+            }),
+            googleTokensRevoked: false,
+          })
         }
       }
 
@@ -427,10 +461,22 @@ export class AuthService {
         })
       }
 
-      user.googleAccessToken = googleToken
-      user.googleEmailVerified = googleUser.emailVerified
-      user.googleTokensRevoked = false
-      await this.userRepository.save(user)
+      // Update tokens if provided, otherwise keep existing or store ID token for backward compatibility
+      const updateData: Partial<User> = {
+        googleEmailVerified: googleUser.emailVerified,
+        googleTokensRevoked: false,
+      }
+
+      if (tokens?.accessToken) {
+        updateData.googleAccessToken = tokens.accessToken
+        updateData.googleRefreshToken = tokens.refreshToken
+        updateData.googleAccessTokenExpiry = tokens.expiryDate
+      } else {
+        // Store ID token for backward compatibility if no access token provided
+        updateData.googleAccessToken = googleToken
+      }
+
+      await this.userRepository.update(user.id, updateData)
 
       const role = user.role?.title?.en || null
       const payload = { id: user.id, role: role }
@@ -498,9 +544,10 @@ export class AuthService {
     })
     const savedLearner = await this.learnerRepository.save(learner)
 
-    user.roleId = learnerRole.id
-    user.learnerId = savedLearner.id
-    await this.userRepository.save(user)
+    await this.userRepository.update(user.id, {
+      roleId: learnerRole.id,
+      learnerId: savedLearner.id,
+    })
 
     return { learnerRole, savedLearner }
   }
@@ -540,9 +587,10 @@ export class AuthService {
     })
     const savedInstructor = await this.instructorRepository.save(instructor)
 
-    user.roleId = instructorRole.id
-    user.instructorId = savedInstructor.id
-    await this.userRepository.save(user)
+    await this.userRepository.update(user.id, {
+      roleId: instructorRole.id,
+      instructorId: savedInstructor.id,
+    })
 
     return { instructorRole, savedInstructor }
   }
@@ -562,7 +610,17 @@ export class AuthService {
       })
     }
 
-    if (user.roleId) {
+    if (user.learnerId || user.instructorId) {
+      throw new ConflictException({
+        message: {
+          en: 'User already has a role assigned',
+          ar: 'المستخدم لديه دور مخصص بالفعل',
+        },
+      })
+    }
+
+    const currentRole = user.role?.title?.en
+    if (currentRole && currentRole !== UserRole.VIEWER) {
       throw new ConflictException({
         message: {
           en: 'User already has a role assigned',
@@ -621,7 +679,17 @@ export class AuthService {
       })
     }
 
-    if (user.roleId) {
+    if (user.learnerId || user.instructorId) {
+      throw new ConflictException({
+        message: {
+          en: 'User already has a role assigned',
+          ar: 'المستخدم لديه دور مخصص بالفعل',
+        },
+      })
+    }
+
+    const currentRole = user.role?.title?.en
+    if (currentRole && currentRole !== UserRole.VIEWER) {
       throw new ConflictException({
         message: {
           en: 'User already has a role assigned',

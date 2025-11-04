@@ -11,6 +11,7 @@ import {
   Res,
   Param,
   UnauthorizedException,
+  Req,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { AuthService } from './auth.service'
@@ -25,6 +26,7 @@ import { Response } from 'express'
 import { RolesGuard } from '../guards/roles.guard'
 import { Roles } from '../decorators/roles.decorator'
 import { UserRole } from '@/common/enum/user-role.enum'
+import { User } from '@/common/models/entities/user.entity'
 
 @Controller('auth')
 @UseFilters(AuthExceptionFilter)
@@ -77,8 +79,15 @@ export class AuthController {
       const { tokens } = await this.googleStrategy.getTokens(code)
       const googleUser = await this.googleStrategy.verifyToken(tokens.id_token)
 
+      const expiryDate = tokens.expiry_date
+        ? new Date(tokens.expiry_date)
+        : undefined
+
       const googlePayload = {
         token: tokens.id_token,
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiryDate,
         user: googleUser,
       }
 
@@ -119,22 +128,14 @@ export class AuthController {
 
   @Post('google/complete/signup-learner')
   @UseGuards(JwtAuthGuard)
-  async completeSignupLearner(@Request() request, @Ip() ip: string) {
-    const user = request.user
-    if (!user) {
-      throw new UnauthorizedException('User not authenticated')
-    }
-    return this.authService.completeGoogleSignupLearner(user.id, ip)
+  async completeSignupLearner(@Req() req: { user: User }, @Ip() ip: string) {
+    return this.authService.completeGoogleSignupLearner(req.user.id, ip)
   }
 
   @Post('google/complete/signup-instructor')
   @UseGuards(JwtAuthGuard)
-  async completeSignupInstructor(@Request() request, @Ip() ip: string) {
-    const user = request.user
-    if (!user) {
-      throw new UnauthorizedException('User not authenticated')
-    }
-    return this.authService.completeGoogleSignupInstructor(user.id, ip)
+  async completeSignupInstructor(@Req() req: { user: User }, @Ip() ip: string) {
+    return this.authService.completeGoogleSignupInstructor(req.user.id, ip)
   }
 
   @Post('google/login/')
@@ -142,9 +143,20 @@ export class AuthController {
     @Body() googleSignupDto: GoogleSignupDto,
     @Ip() ip: string,
   ) {
+    const expiryDate = googleSignupDto.expiryDate
+      ? typeof googleSignupDto.expiryDate === 'string'
+        ? new Date(googleSignupDto.expiryDate)
+        : googleSignupDto.expiryDate
+      : undefined
+
     return this.authService.googleLoginWithToken(
       googleSignupDto.googleToken,
       ip,
+      {
+        accessToken: googleSignupDto.accessToken,
+        refreshToken: googleSignupDto.refreshToken,
+        expiryDate,
+      },
     )
   }
 }
