@@ -549,7 +549,12 @@ export class AuthService {
       learnerId: savedLearner.id,
     })
 
-    return { learnerRole, savedLearner }
+    const savedUserFound = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: { role: true },
+    })
+
+    return savedUserFound
   }
 
   private async createInstructorAndAssignRole(user: User, ip: string) {
@@ -592,7 +597,12 @@ export class AuthService {
       instructorId: savedInstructor.id,
     })
 
-    return { instructorRole, savedInstructor }
+    const savedUserFound = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: { role: true },
+    })
+
+    return savedUserFound
   }
 
   async completeGoogleSignupLearner(userId: number, ip: string) {
@@ -629,26 +639,21 @@ export class AuthService {
       })
     }
 
-    await this.createLearnerAndAssignRole(user, ip)
+    const savedUserFound = await this.createLearnerAndAssignRole(user, ip)
 
-    const userWithRole = await this.userRepository.findOne({
-      where: { id: user.id },
-      relations: { role: true },
-    })
-
-    const action = `User ${user.email} completed Google signup as Learner from ${ip}`
+    const action = `User ${savedUserFound.email} completed Google signup as Learner from ${ip}`
     this.userLogService.saveUserLog(
-      createUserLogData(user.id, action, LogStatus.SUCCESS, ip),
+      createUserLogData(savedUserFound.id, action, LogStatus.SUCCESS, ip),
     )
 
-    const role = userWithRole?.role?.title?.en || UserRole.LEARNER
-    const payload = { id: user.id, role: role }
+    const role = savedUserFound?.role?.title?.en || UserRole.LEARNER
+    const payload = { id: savedUserFound.id, role: role }
     const userPayload = {
-      userId: user.id,
-      fullName: user.fullName,
-      email: user.email,
-      learnerId: user.learnerId,
-      instructorId: user.instructorId,
+      userId: savedUserFound.id,
+      fullName: savedUserFound.fullName,
+      email: savedUserFound.email,
+      learnerId: savedUserFound.learnerId,
+      instructorId: savedUserFound.instructorId,
     }
 
     return {
@@ -698,26 +703,21 @@ export class AuthService {
       })
     }
 
-    await this.createInstructorAndAssignRole(user, ip)
+    const savedUserFound = await this.createInstructorAndAssignRole(user, ip)
 
-    const userWithRole = await this.userRepository.findOne({
-      where: { id: user.id },
-      relations: { role: true },
-    })
-
-    const action = `User ${user.email} completed Google signup as Instructor from ${ip}`
+    const action = `User ${savedUserFound.email} completed Google signup as Instructor from ${ip}`
     this.userLogService.saveUserLog(
-      createUserLogData(user.id, action, LogStatus.SUCCESS, ip),
+      createUserLogData(savedUserFound.id, action, LogStatus.SUCCESS, ip),
     )
 
-    const role = userWithRole?.role?.title?.en || UserRole.INSTRUCTOR
-    const payload = { id: user.id, role: role }
+    const role = savedUserFound?.role?.title?.en || UserRole.INSTRUCTOR
+    const payload = { id: savedUserFound.id, role: role }
     const userPayload = {
-      userId: user.id,
-      fullName: user.fullName,
-      email: user.email,
-      learnerId: user.learnerId,
-      instructorId: user.instructorId,
+      userId: savedUserFound.id,
+      fullName: savedUserFound.fullName,
+      email: savedUserFound.email,
+      learnerId: savedUserFound.learnerId,
+      instructorId: savedUserFound.instructorId,
     }
 
     return {
