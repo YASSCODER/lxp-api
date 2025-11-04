@@ -498,9 +498,10 @@ export class AuthService {
     })
     const savedLearner = await this.learnerRepository.save(learner)
 
-    user.roleId = learnerRole.id
-    user.learnerId = savedLearner.id
-    await this.userRepository.save(user)
+    await this.userRepository.update(user.id, {
+      roleId: learnerRole.id,
+      learnerId: savedLearner.id,
+    })
 
     return { learnerRole, savedLearner }
   }
@@ -540,9 +541,10 @@ export class AuthService {
     })
     const savedInstructor = await this.instructorRepository.save(instructor)
 
-    user.roleId = instructorRole.id
-    user.instructorId = savedInstructor.id
-    await this.userRepository.save(user)
+    await this.userRepository.update(user.id, {
+      roleId: instructorRole.id,
+      instructorId: savedInstructor.id,
+    })
 
     return { instructorRole, savedInstructor }
   }
