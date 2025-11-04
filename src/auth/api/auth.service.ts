@@ -553,7 +553,7 @@ export class AuthService {
       where: { id: user.id },
       relations: { role: true },
     })
-
+    
     return savedUserFound
   }
 
@@ -639,6 +639,16 @@ export class AuthService {
       })
     }
 
+    const currentRole = user.role?.title?.en
+    if (currentRole && currentRole !== UserRole.VIEWER) {
+      throw new ConflictException({
+        message: {
+          en: 'User already has a role assigned',
+          ar: 'المستخدم لديه دور مخصص بالفعل',
+        },
+      })
+    }
+
     const savedUserFound = await this.createLearnerAndAssignRole(user, ip)
 
     const action = `User ${savedUserFound.email} completed Google signup as Learner from ${ip}`
@@ -685,6 +695,17 @@ export class AuthService {
     }
 
     if (user.learnerId || user.instructorId) {
+      throw new ConflictException({
+        message: {
+          en: 'User already has a role assigned',
+          ar: 'المستخدم لديه دور مخصص بالفعل',
+        },
+      })
+    }
+
+    const currentRole = user.role?.title?.en
+    if (currentRole && currentRole !== UserRole.VIEWER) {
+
       throw new ConflictException({
         message: {
           en: 'User already has a role assigned',
