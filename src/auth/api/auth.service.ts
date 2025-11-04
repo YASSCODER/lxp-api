@@ -562,7 +562,17 @@ export class AuthService {
       })
     }
 
-    if (user.roleId) {
+    if (user.learnerId || user.instructorId) {
+      throw new ConflictException({
+        message: {
+          en: 'User already has a role assigned',
+          ar: 'المستخدم لديه دور مخصص بالفعل',
+        },
+      })
+    }
+
+    const currentRole = user.role?.title?.en
+    if (currentRole && currentRole !== UserRole.VIEWER) {
       throw new ConflictException({
         message: {
           en: 'User already has a role assigned',
@@ -621,7 +631,17 @@ export class AuthService {
       })
     }
 
-    if (user.roleId) {
+    if (user.learnerId || user.instructorId) {
+      throw new ConflictException({
+        message: {
+          en: 'User already has a role assigned',
+          ar: 'المستخدم لديه دور مخصص بالفعل',
+        },
+      })
+    }
+
+    const currentRole = user.role?.title?.en
+    if (currentRole && currentRole !== UserRole.VIEWER) {
       throw new ConflictException({
         message: {
           en: 'User already has a role assigned',
