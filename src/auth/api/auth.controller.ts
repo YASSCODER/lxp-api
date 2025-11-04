@@ -79,8 +79,15 @@ export class AuthController {
       const { tokens } = await this.googleStrategy.getTokens(code)
       const googleUser = await this.googleStrategy.verifyToken(tokens.id_token)
 
+      const expiryDate = tokens.expiry_date
+        ? new Date(tokens.expiry_date)
+        : undefined
+
       const googlePayload = {
         token: tokens.id_token,
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiryDate,
         user: googleUser,
       }
 
@@ -136,9 +143,20 @@ export class AuthController {
     @Body() googleSignupDto: GoogleSignupDto,
     @Ip() ip: string,
   ) {
+    const expiryDate = googleSignupDto.expiryDate
+      ? typeof googleSignupDto.expiryDate === 'string'
+        ? new Date(googleSignupDto.expiryDate)
+        : googleSignupDto.expiryDate
+      : undefined
+
     return this.authService.googleLoginWithToken(
       googleSignupDto.googleToken,
       ip,
+      {
+        accessToken: googleSignupDto.accessToken,
+        refreshToken: googleSignupDto.refreshToken,
+        expiryDate,
+      },
     )
   }
 }

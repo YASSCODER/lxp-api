@@ -33,7 +33,7 @@ import { AuthExceptionFilter } from './filters/auth-exception.filter'
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET') || 'your-secret-key',
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRATION') || '24h',
+          expiresIn: configService.get<string>('JWT_EXPIRATION') || '30d',
         },
       }),
       inject: [ConfigService],
