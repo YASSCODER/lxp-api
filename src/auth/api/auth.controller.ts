@@ -149,8 +149,6 @@ export class AuthController {
         : googleSignupDto.expiryDate
       : undefined
 
-    console.log('Expiry Date:', expiryDate)
-
     return this.authService.googleLoginWithToken(
       googleSignupDto.googleToken,
       ip,
