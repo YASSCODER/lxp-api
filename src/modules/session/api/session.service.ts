@@ -12,11 +12,10 @@ export class SessionService {
     private readonly sessionRepository: Repository<Session>,
   ) {}
 
-  async createSession(payload: CreateSessionDto, user: User) {
+  async createSession(payload: CreateSessionDto) {
     const session = this.sessionRepository.create({
       title: payload.title,
       roomId: payload.roomId,
-      learnerId: user.learnerId,
     })
 
     await this.sessionRepository.save(session)

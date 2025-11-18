@@ -13,10 +13,7 @@ export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
   @Post()
-  async createSession(
-    @Body() payload: CreateSessionDto,
-    request: { user: User },
-  ) {
-    return await this.sessionService.createSession(payload, request.user)
+  async createSession(@Body() payload: CreateSessionDto) {
+    return await this.sessionService.createSession(payload)
   }
 }
