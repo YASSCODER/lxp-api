@@ -10,19 +10,19 @@ export class Session extends BaseModel {
   @Column({ type: 'varchar', nullable: false })
   title: string
 
-  @Column({ type: 'integer', nullable: false })
+  @Column({ type: 'integer', nullable: true })
   learnerId: number
 
   @Column({ type: 'varchar', nullable: false })
   roomId: string
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   startAt: string
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   endAt: string
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   scheduledAt: Date
 
   @OneToMany(() => Presence, (p) => p.session)
