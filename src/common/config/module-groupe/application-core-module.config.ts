@@ -11,6 +11,8 @@ import { LearnerModule } from '@/modules/learner/learner.module'
 import { InstructorModule } from '@/modules/instructor/instructor.module'
 import { OnboardingModule } from '@/modules/onboarding-question/onboarding.module'
 import { NotificationModule } from '@/common/notification/notification.module'
+import { NoteSessionModule } from '@/modules/note-session/note-session.module'
+import { SessionModule } from '@/modules/session/session.module'
 
 export const ApplicationCoreModule = [
   AuthModule,
@@ -26,4 +28,6 @@ export const ApplicationCoreModule = [
   AWSModule,
   OnboardingModule,
   NotificationModule,
+  SessionModule,
+  NoteSessionModule,
 ]
