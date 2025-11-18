@@ -7,6 +7,15 @@ export class Session extends BaseModel {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
+  @Column({ type: 'varchar', nullable: false })
+  title: string
+
+  @Column({ type: 'integer', nullable: false })
+  learnerId: number
+
+  @Column({ type: 'varchar', nullable: false })
+  roomId: string
+
   @Column({ type: 'timestamp' })
   startAt: string
 
