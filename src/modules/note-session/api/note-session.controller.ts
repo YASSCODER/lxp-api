@@ -28,6 +28,7 @@ export class NoteSessionController {
   }
 
   @Get(':sessionId/summary')
+  @UseGuards(JwtAuthGuard)
   async getNoteSession(
     @Param('sessionId') sessionId: string,
     @Req() request: { user: User },

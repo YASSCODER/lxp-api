@@ -33,7 +33,7 @@ export class NoteSessionService {
 
   async getSessionNote(sessionId: string, user: User) {
     const sessionNotes = await this.sessionNotesRepository.findOne({
-      where: { sessionId },
+      where: { sessionId: sessionId },
     })
 
     if (!sessionNotes) {
