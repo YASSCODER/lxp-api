@@ -10,8 +10,8 @@ export class SessionNotes extends BaseModel {
   @Column({ type: 'jsonb', nullable: true })
   summarySession: SummaryEmbedded
 
-  @Column({ type: 'integer', nullable: false })
-  sessionId: number
+  @Column({ type: 'varchar', nullable: false })
+  sessionId: string
 
   @Column({ type: 'integer', nullable: false })
   roomId: number

@@ -14,7 +14,7 @@ export class NoteSessionService {
     private readonly sessionNotesRepository: Repository<SessionNotes>,
   ) {}
 
-  async createSessionNote(payload: CreateSummaryNotesDto, sessionId: number) {
+  async createSessionNote(payload: CreateSummaryNotesDto, sessionId: string) {
     const notes = this.sessionNotesRepository.create({
       summarySession: payload.summary,
       sessionId: payload.sessionId,
@@ -31,7 +31,7 @@ export class NoteSessionService {
     }
   }
 
-  async getSessionNote(sessionId: number, user: User) {
+  async getSessionNote(sessionId: string, user: User) {
     const sessionNotes = await this.sessionNotesRepository.findOne({
       where: { sessionId },
     })

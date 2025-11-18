@@ -18,11 +18,16 @@ export class SessionService {
       roomId: payload.roomId,
     })
 
-    await this.sessionRepository.save(session)
+    const sessionSaved = await this.sessionRepository.save(session)
 
     return {
-      status: HttpStatus.CREATED,
-      message: 'Session created successfully',
+      id: sessionSaved.id,
+      sessionId: sessionSaved.id,
+      session: {
+        id: sessionSaved.id,
+        title: sessionSaved.title,
+        roomId: sessionSaved.roomId,
+      },
     }
   }
 }
