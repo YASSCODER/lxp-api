@@ -13,8 +13,6 @@ export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.INSTRUCTOR)
   async createSession(
     @Body() payload: CreateSessionDto,
     request: { user: User },
