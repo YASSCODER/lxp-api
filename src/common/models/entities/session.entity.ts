@@ -25,6 +25,11 @@ export class Session extends BaseModel {
   @Column({ type: 'timestamp', nullable: true })
   scheduledAt: Date
 
+  @Column({ type: 'jsonb', nullable: true })
+  metadata: {
+    participants?: number[]
+  }
+
   @OneToMany(() => Presence, (p) => p.session)
   presences: Presence[]
 }
