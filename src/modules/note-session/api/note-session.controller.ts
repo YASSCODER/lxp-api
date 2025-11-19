@@ -20,19 +20,17 @@ export class NoteSessionController {
   constructor(private readonly noteSessionService: NoteSessionService) {}
 
   @Post(':sessionId/summary')
-  @UseGuards(JwtAuthGuard)
   async createNoteSession(
-    @Param('sessionId') sessionId: number,
+    @Param('sessionId') sessionId: string,
     @Body() payload: CreateSummaryNotesDto,
   ) {
     return await this.noteSessionService.createSessionNote(payload, sessionId)
   }
 
   @Get(':sessionId/summary')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.INSTRUCTOR, UserRole.LEARNER)
+  @UseGuards(JwtAuthGuard)
   async getNoteSession(
-    @Param('sessionId') sessionId: number,
+    @Param('sessionId') sessionId: string,
     @Req() request: { user: User },
   ) {
     return await this.noteSessionService.getSessionNote(sessionId, request.user)

@@ -1,10 +1,14 @@
 import { SessionNotes } from '@/common/models/entities/sessionNotes.entity'
+import { Session } from '@/common/models/entities/session.entity'
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { CreateSummaryNotesDto } from '../dto/create-summary-notes.dto'
 import { User } from '@/common/models/entities/user.entity'
-import { throwFormValidationError } from '@/common/utils/errors.utils'
+import {
+  throwFormValidationError,
+  throwForbiddenError,
+} from '@/common/utils/errors.utils'
 import { ErrorCodes } from '@/common/enum/error-codes.enum'
 
 @Injectable()
@@ -12,9 +16,11 @@ export class NoteSessionService {
   constructor(
     @InjectRepository(SessionNotes)
     private readonly sessionNotesRepository: Repository<SessionNotes>,
+    @InjectRepository(Session)
+    private readonly sessionRepository: Repository<Session>,
   ) {}
 
-  async createSessionNote(payload: CreateSummaryNotesDto, sessionId: number) {
+  async createSessionNote(payload: CreateSummaryNotesDto, sessionId: string) {
     const notes = this.sessionNotesRepository.create({
       summarySession: payload.summary,
       sessionId: payload.sessionId,
@@ -31,9 +37,9 @@ export class NoteSessionService {
     }
   }
 
-  async getSessionNote(sessionId: number, user: User) {
+  async getSessionNote(sessionId: string, user: User) {
     const sessionNotes = await this.sessionNotesRepository.findOne({
-      where: { sessionId },
+      where: { sessionId: sessionId },
     })
 
     if (!sessionNotes) {
@@ -43,22 +49,6 @@ export class NoteSessionService {
           message: {
             en: 'session notes not found',
             ar: 'ملاحظات الجلسة غير موجودة',
-          },
-        },
-      })
-    }
-
-    const userInInstance = sessionNotes.summarySession.participantsId.includes(
-      user.id,
-    )
-
-    if (!userInInstance) {
-      throwFormValidationError({
-        errorCode: ErrorCodes.FORBIDDEN_RESSOURCE_ACCESS,
-        sessionId: {
-          message: {
-            en: 'You do not have access to these session notes',
-            ar: 'ليس لديك حق الوصول إلى ملاحظات الجلسة هذه',
           },
         },
       })

@@ -8,7 +8,7 @@ export class CreateSummaryNotesDto {
     summary: string
     participantsId: number[]
   }
-  sessionId: number
+  sessionId: string
   roomId: number
   userId: number
   instructorId: number
